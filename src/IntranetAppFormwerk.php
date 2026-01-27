@@ -40,4 +40,9 @@ class IntranetAppFormwerk implements IntranetAppInterface
     {
         return \Hwkdo\IntranetAppFormwerk\Data\AppSettings::class;
     }
+
+    public static function mcpServers(): array
+    {
+        return [];
+    }
 }
