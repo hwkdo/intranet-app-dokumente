@@ -27,6 +27,8 @@ class IntranetAppDokumenteServiceProvider extends PackageServiceProvider
             \Hwkdo\IntranetAppDokumente\Livewire::class
         );
 
-        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        $this->app->booted(function () {
+            $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        });
     }
 }
