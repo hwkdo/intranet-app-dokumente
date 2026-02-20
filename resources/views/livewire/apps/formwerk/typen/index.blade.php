@@ -28,11 +28,12 @@ title('Formwerk - Typen');
 ?>
 <div>
 <x-intranet-app-formwerk::formwerk-layout heading="Typen" subheading="Formwerk-Typen verwalten">
-    <div class="space-y-6">
+    <flux:card class="glass-card">
+        <div class="space-y-6">
         <div class="flex items-center justify-between">
-            <flux:input 
-                wire:model.live.debounce.300ms="filter" 
-                placeholder="Nach Name suchen..." 
+            <flux:input
+                wire:model.live.debounce.300ms="filter"
+                placeholder="Nach Name suchen..."
                 icon="magnifying-glass"
                 class="w-64"
             />
@@ -92,9 +93,9 @@ title('Formwerk - Typen');
                 @endforeach
             </flux:table.rows>
         </flux:table>
-    </div>
+        </div>
+    </flux:card>
 
-    
 </x-intranet-app-formwerk::formwerk-layout>
 {{-- Token Modal --}}
     <flux:modal wire:model="showTokenModal" name="token-modal" class="max-w-md">

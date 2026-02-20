@@ -36,10 +36,11 @@ title('Formwerk - Webhooks');
 ?>
 <div>
 <x-intranet-app-formwerk::formwerk-layout heading="Webhooks" subheading="Übersicht aller Webhook-Aufrufe">
-    <div class="space-y-6">
-        <flux:input 
-            wire:model.live.debounce.300ms="filter" 
-            placeholder="Nach Typ oder Identifier suchen..." 
+    <flux:card class="glass-card">
+        <div class="space-y-6">
+        <flux:input
+            wire:model.live.debounce.300ms="filter"
+            placeholder="Nach Typ oder Identifier suchen..."
             icon="magnifying-glass"
             class="w-64"
         />
@@ -108,6 +109,7 @@ title('Formwerk - Webhooks');
                 @endforeach
             </flux:table.rows>
         </flux:table>
-    </div>
+        </div>
+    </flux:card>
 </x-intranet-app-formwerk::formwerk-layout>
 </div>

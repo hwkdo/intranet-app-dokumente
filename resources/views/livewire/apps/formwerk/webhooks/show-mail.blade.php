@@ -82,27 +82,27 @@ title(fn () => $this->mailSubject);
     subheading="E-Mail Details"
 >
     <div class="space-y-6">
-        <flux:card>
+        <flux:card class="glass-card">
             <div class="space-y-4">
                 <div class="flex items-start gap-2">
-                    <span class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 w-32">Von:</span>
+                    <span class="text-sm font-semibold text-[#073070]/70 dark:text-white/60 w-32">Von:</span>
                     <span class="text-sm">{{ $mailFrom }}</span>
                 </div>
                 <flux:separator variant="subtle" />
                 <div class="flex items-start gap-2">
-                    <span class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 w-32">An:</span>
+                    <span class="text-sm font-semibold text-[#073070]/70 dark:text-white/60 w-32">An:</span>
                     <span class="text-sm">{{ $mailTo }}</span>
                 </div>
                 <flux:separator variant="subtle" />
                 <div class="flex items-start gap-2">
-                    <span class="text-sm font-semibold text-zinc-600 dark:text-zinc-400 w-32">Datum:</span>
+                    <span class="text-sm font-semibold text-[#073070]/70 dark:text-white/60 w-32">Datum:</span>
                     <span class="text-sm">{{ $mailReceivedDateTime }}</span>
                 </div>
             </div>
         </flux:card>
 
-        <flux:card>
-            <div class="p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg overflow-y-auto" style="max-height: 70vh;">
+        <flux:card class="glass-card">
+            <div class="p-4 bg-white/60 dark:bg-[#04214e]/60 rounded-lg overflow-y-auto border border-[#d0e3f9]/60 dark:border-white/10" style="max-height: 70vh;">
                 @if($mailBodyType === 'html')
                     <iframe 
                         srcdoc="{{ str_replace('"', '&quot;', $mailBody) }}" 
@@ -118,14 +118,14 @@ title(fn () => $this->mailSubject);
         </flux:card>
 
         @if($hasAttachments && count($attachments) > 0)
-            <flux:card>
+            <flux:card class="glass-card">
                 <div class="space-y-4">
                     <flux:heading size="lg">Anhänge ({{ count($attachments) }})</flux:heading>
                     <flux:separator variant="subtle" />
                     
                     <div class="space-y-2">
                         @foreach($attachments as $attachment)
-                            <div class="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-900 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+                            <div class="flex items-center justify-between p-3 rounded-lg border border-[#d0e3f9]/60 dark:border-white/10 bg-white/50 dark:bg-[#04214e]/40 hover:bg-[#d0e3f9]/60 dark:hover:bg-[#073070]/50 transition">
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
                                     <flux:icon.paper-clip class="flex-shrink-0 text-zinc-500" />
                                     <div class="min-w-0 flex-1">

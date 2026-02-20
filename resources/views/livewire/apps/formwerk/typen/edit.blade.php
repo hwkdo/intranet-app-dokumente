@@ -100,7 +100,7 @@ title(fn () => $this->typ ? 'Typ bearbeiten' : 'Neuer Typ');
     :subheading="$this->typ ? 'Bearbeiten Sie die Typ-Eigenschaften' : 'Erstellen Sie einen neuen Formwerk-Typ'"
 >
     <form wire:submit="save" class="space-y-6">
-        <flux:card>
+        <flux:card class="glass-card">
             <div class="space-y-4">
                 <flux:heading size="lg">Grundlegende Informationen</flux:heading>
                 
@@ -140,7 +140,7 @@ title(fn () => $this->typ ? 'Typ bearbeiten' : 'Neuer Typ');
             </div>
         </flux:card>
 
-        <flux:card>
+        <flux:card class="glass-card">
             <div class="space-y-4">
                 <flux:heading size="lg">Technische Konfiguration</flux:heading>
                 

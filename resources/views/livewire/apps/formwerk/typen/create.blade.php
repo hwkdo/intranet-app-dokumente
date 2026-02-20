@@ -78,7 +78,7 @@ title('Neuer Typ');
     subheading="Erstellen Sie einen neuen Formwerk-Typ"
 >
     <form wire:submit="save" class="space-y-6">
-        <flux:card>
+        <flux:card class="glass-card">
             <div class="space-y-4">
                 <flux:heading size="lg">Grundlegende Informationen</flux:heading>
                 
@@ -118,7 +118,7 @@ title('Neuer Typ');
             </div>
         </flux:card>
 
-        <flux:card>
+        <flux:card class="glass-card">
             <div class="space-y-4">
                 <flux:heading size="lg">Technische Konfiguration</flux:heading>
                 

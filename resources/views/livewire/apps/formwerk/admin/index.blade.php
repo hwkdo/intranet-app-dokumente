@@ -27,26 +27,26 @@ state(['activeTab' => 'einstellungen']);
 
         <flux:tab.panel name="statistiken">
             <div style="min-height: 400px;">
-                <flux:card>
+                <flux:card class="glass-card">
                     <flux:heading size="lg" class="mb-4">App-Statistiken</flux:heading>
                     <flux:text class="mb-6">
                         Übersicht über die Nutzung der Formwerk App.
                     </flux:text>
-                    
+
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        <div class="rounded-lg border p-4">
+                        <div class="rounded-xl border border-[#d0e3f9]/80 dark:border-white/10 bg-[#d0e3f9]/40 dark:bg-[#073070]/40 p-4">
                             <flux:heading size="md">Aktive Benutzer</flux:heading>
-                            <flux:text size="xl" class="mt-2">42</flux:text>
+                            <flux:text size="xl" class="mt-2 font-semibold text-[#073070] dark:text-white">42</flux:text>
                         </div>
-                        
-                        <div class="rounded-lg border p-4">
+
+                        <div class="rounded-xl border border-[#d0e3f9]/80 dark:border-white/10 bg-[#d0e3f9]/40 dark:bg-[#073070]/40 p-4">
                             <flux:heading size="md">Seitenaufrufe</flux:heading>
-                            <flux:text size="xl" class="mt-2">1,234</flux:text>
+                            <flux:text size="xl" class="mt-2 font-semibold text-[#073070] dark:text-white">1.234</flux:text>
                         </div>
-                        
-                        <div class="rounded-lg border p-4">
+
+                        <div class="rounded-xl border border-[#d0e3f9]/80 dark:border-white/10 bg-[#d0e3f9]/40 dark:bg-[#073070]/40 p-4">
                             <flux:heading size="md">Letzte Aktivität</flux:heading>
-                            <flux:text size="xl" class="mt-2">2 Min</flux:text>
+                            <flux:text size="xl" class="mt-2 font-semibold text-[#073070] dark:text-white">2 Min</flux:text>
                         </div>
                     </div>
                 </flux:card>
