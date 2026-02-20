@@ -25,6 +25,7 @@
             @endcan
         </div>
 
+        <flux:card class="glass-card p-0!">
         <div
             class="overflow-x-auto"
             x-data="{
@@ -57,24 +58,24 @@
             </style>
             <flux:table class="w-full" data-dokumente-matrix>
                 <flux:table.columns>
-                    <flux:table.column class="bg-zinc-700 text-white whitespace-nowrap"></flux:table.column>
+                    <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! whitespace-nowrap"></flux:table.column>
                     @foreach($categories as $cat)
-                        <flux:table.column class="bg-zinc-700 text-white text-center w-[140px] max-w-[140px]" align="center">
+                        <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! text-center w-[140px] max-w-[140px]" align="center">
                             <span class="block w-full text-center whitespace-normal break-words hyphens-auto text-sm">{{ $cat->name }}</span>
                         </flux:table.column>
                     @endforeach
-                    <flux:table.column class="bg-zinc-700 text-white text-center w-12">∑</flux:table.column>
+                    <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! text-center w-12">∑</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     {{-- HGF row --}}
                     <flux:table.row>
                         @php $hgfIds = implode(',', $hgf->getDescendantIds()); $m = $this->countMatrix['hgf']; @endphp
-                        <flux:table.cell class="bg-zinc-700 text-white font-medium">
+                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium">
                             {{ $hgf->bezeichnung }}
                         </flux:table.cell>
                         @foreach($categories as $cat)
                             @php $cnt = $m[$cat->id] ?? 0; @endphp
-                            <flux:table.cell class="bg-zinc-100 dark:bg-zinc-800 text-center">
+                            <flux:table.cell class="bg-white/50 dark:bg-[#04214e]/40 text-center">
                                 @if($cnt > 0)
                                     <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $hgfIds }}', '{{ addslashes($cat->name) }}', '{{ addslashes($hgf->bezeichnung) }}')" class="text-blue-600 hover:underline">
                                         {{ $cnt }}
@@ -85,9 +86,9 @@
                             </flux:table.cell>
                         @endforeach
                         @php $hgfAll = $m['all'] ?? 0; @endphp
-                        <flux:table.cell class="bg-zinc-700 text-white text-center">
+                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
                             @if($hgfAll > 0)
-                                <button type="button" wire:click="openDocumentListModal(null, '{{ $hgfIds }}', 'Alle', '{{ addslashes($hgf->bezeichnung) }}')" class="text-white hover:underline">
+                                <button type="button" wire:click="openDocumentListModal(null, '{{ $hgfIds }}', 'Alle', '{{ addslashes($hgf->bezeichnung) }}')" class="text-white! hover:underline">
                                     {{ $hgfAll }}
                                 </button>
                             @else
@@ -99,12 +100,12 @@
                     {{-- Stab row (click to expand) --}}
                     <flux:table.row>
                         @php $stabIds = $this->getStabGvpIds(); $stabIdsStr = implode(',', $stabIds); $stabM = $this->countMatrix['stab']; @endphp
-                        <flux:table.cell class="bg-zinc-700 text-white font-medium cursor-pointer" @click="toggleStab()">
+                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium cursor-pointer select-none" @click="toggleStab()">
                             Stab
                         </flux:table.cell>
                         @foreach($categories as $cat)
                             @php $cnt = $stabM[$cat->id] ?? 0; @endphp
-                            <flux:table.cell class="bg-zinc-100 dark:bg-zinc-800 text-center">
+                            <flux:table.cell class="bg-white/50 dark:bg-[#04214e]/40 text-center">
                                 @if($cnt > 0)
                                     <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $stabIdsStr }}', '{{ addslashes($cat->name) }}', 'Stab')" class="text-blue-600 hover:underline">
                                         {{ $cnt }}
@@ -115,9 +116,9 @@
                             </flux:table.cell>
                         @endforeach
                         @php $stabAll = $stabM['all'] ?? 0; @endphp
-                        <flux:table.cell class="bg-zinc-700 text-white text-center">
+                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
                             @if($stabAll > 0)
-                                <button type="button" wire:click="openDocumentListModal(null, '{{ $stabIdsStr }}', 'Alle', 'Stab')" class="text-white hover:underline">
+                                <button type="button" wire:click="openDocumentListModal(null, '{{ $stabIdsStr }}', 'Alle', 'Stab')" class="text-white! hover:underline">
                                     {{ $stabAll }}
                                 </button>
                             @else
@@ -130,7 +131,7 @@
                     @foreach($stabs as $stab)
                         @php $stabDirect = $this->countMatrix['stabDirect'][$stab->id] ?? []; $stabDocCount = $stabDirect['all'] ?? 0; @endphp
                         <flux:table.row x-show="stabOpen" x-cloak>
-                                <flux:table.cell class="bg-zinc-500 text-white">{{ $stab->bezeichnung }}</flux:table.cell>
+                                <flux:table.cell class="bg-[#456494] dark:bg-[#456494]/80 text-white!">{{ $stab->bezeichnung }}</flux:table.cell>
                                 @foreach($categories as $cat)
                                     @php $cnt = $stabDirect[$cat->id] ?? 0; @endphp
                                     <flux:table.cell class="text-center">
@@ -143,9 +144,9 @@
                                         @endif
                                     </flux:table.cell>
                                 @endforeach
-                                <flux:table.cell class="bg-zinc-700 text-white text-center">
+                                <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
                                     @if($stabDocCount > 0)
-                                        <button type="button" wire:click="openDocumentListModal(null, '{{ $stab->id }}', 'Alle', '{{ addslashes($stab->bezeichnung) }}')" class="text-white hover:underline">
+                                        <button type="button" wire:click="openDocumentListModal(null, '{{ $stab->id }}', 'Alle', '{{ addslashes($stab->bezeichnung) }}')" class="text-white! hover:underline">
                                             {{ $stabDocCount }}
                                         </button>
                                     @else
@@ -159,12 +160,12 @@
                     @foreach($gbs as $gb)
                         @php $gbIds = implode(',', $gb->getDescendantIds()); $gbM = $this->countMatrix['gb'][$gb->id] ?? []; @endphp
                         <flux:table.row>
-                            <flux:table.cell class="bg-zinc-700 text-white font-medium cursor-pointer" @click="toggleGb({{ $gb->id }})">
+                            <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium cursor-pointer select-none" @click="toggleGb({{ $gb->id }})">
                                 {{ $gb->bezeichnung }}
                             </flux:table.cell>
                             @foreach($categories as $cat)
                                 @php $cnt = $gbM[$cat->id] ?? 0; @endphp
-                                <flux:table.cell class="bg-zinc-100 dark:bg-zinc-800 text-center">
+                                <flux:table.cell class="bg-white/50 dark:bg-[#04214e]/40 text-center">
                                     @if($cnt > 0)
                                         <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $gbIds }}', '{{ addslashes($cat->name) }}', '{{ addslashes($gb->bezeichnung) }}')" class="text-blue-600 hover:underline">
                                             {{ $cnt }}
@@ -175,9 +176,9 @@
                                 </flux:table.cell>
                             @endforeach
                             @php $gbAll = $gbM['all'] ?? 0; @endphp
-                            <flux:table.cell class="bg-zinc-700 text-white text-center">
+                            <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
                                 @if($gbAll > 0)
-                                    <button type="button" wire:click="openDocumentListModal(null, '{{ $gbIds }}', 'Alle', '{{ addslashes($gb->bezeichnung) }}')" class="text-white hover:underline">
+                                    <button type="button" wire:click="openDocumentListModal(null, '{{ $gbIds }}', 'Alle', '{{ addslashes($gb->bezeichnung) }}')" class="text-white! hover:underline">
                                         {{ $gbAll }}
                                     </button>
                                 @else
@@ -189,7 +190,7 @@
                         {{-- GB aufgeklappt (Optimistic UI: immer im DOM, Sichtbarkeit per Alpine) --}}
                         @php $gbDirectM = $this->countMatrix['gbDirect'][$gb->id] ?? []; $gbDirectCount = $gbDirectM['all'] ?? 0; @endphp
                         <flux:table.row x-show="openedGbIds.includes({{ $gb->id }})" x-cloak>
-                                <flux:table.cell class="bg-zinc-500 text-white">Geschäftsführung</flux:table.cell>
+                                <flux:table.cell class="bg-[#456494] dark:bg-[#456494]/80 text-white!">Geschäftsführung</flux:table.cell>
                                 @foreach($categories as $cat)
                                     @php $cnt = $gbDirectM[$cat->id] ?? 0; @endphp
                                     <flux:table.cell class="text-center">
@@ -202,9 +203,9 @@
                                         @endif
                                     </flux:table.cell>
                                 @endforeach
-                                <flux:table.cell class="bg-zinc-700 text-white text-center">
+                                <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
                                     @if($gbDirectCount > 0)
-                                        <button type="button" wire:click="openDocumentListModal(null, '{{ $gb->id }}', 'Alle', 'Geschäftsführung')" class="text-white hover:underline">
+                                        <button type="button" wire:click="openDocumentListModal(null, '{{ $gb->id }}', 'Alle', 'Geschäftsführung')" class="text-white! hover:underline">
                                             {{ $gbDirectCount }}
                                         </button>
                                     @else
@@ -215,7 +216,7 @@
                             @foreach($gb->childGvps as $abt)
                                 @php $abtIds = implode(',', $abt->getDescendantIds()); $abtM = $this->countMatrix['abt'][$abt->id] ?? []; @endphp
                                 <flux:table.row x-show="openedGbIds.includes({{ $gb->id }})" x-cloak>
-                                    <flux:table.cell class="bg-zinc-500 text-white">{{ $abt->bezeichnung }}</flux:table.cell>
+                                    <flux:table.cell class="bg-[#456494] dark:bg-[#456494]/80 text-white!">{{ $abt->bezeichnung }}</flux:table.cell>
                                     @foreach($categories as $cat)
                                         @php $cnt = $abtM[$cat->id] ?? 0; @endphp
                                         <flux:table.cell class="text-center">
@@ -229,9 +230,9 @@
                                         </flux:table.cell>
                                     @endforeach
                                     @php $abtAll = $abtM['all'] ?? 0; @endphp
-                                    <flux:table.cell class="bg-zinc-700 text-white text-center">
+                                    <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
                                         @if($abtAll > 0)
-                                            <button type="button" wire:click="openDocumentListModal(null, '{{ $abtIds }}', 'Alle', '{{ addslashes($abt->bezeichnung) }}')" class="text-white hover:underline">
+                                            <button type="button" wire:click="openDocumentListModal(null, '{{ $abtIds }}', 'Alle', '{{ addslashes($abt->bezeichnung) }}')" class="text-white! hover:underline">
                                                 {{ $abtAll }}
                                             </button>
                                         @else
@@ -244,12 +245,12 @@
 
                     {{-- Sum row --}}
                     <flux:table.row>
-                        <flux:table.cell class="bg-zinc-700 text-white font-medium">∑</flux:table.cell>
+                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium">∑</flux:table.cell>
                         @foreach($categories as $cat)
                             @php $cnt = $this->countMatrix['category'][$cat->id] ?? 0; @endphp
-                            <flux:table.cell class="bg-zinc-700 text-white text-center">
+                            <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
                                 @if($cnt > 0)
-                                    <button type="button" wire:click="openDocumentListModalByCategory({{ $cat->id }}, '{{ addslashes($cat->name) }}')" class="text-white hover:underline">
+                                    <button type="button" wire:click="openDocumentListModalByCategory({{ $cat->id }}, '{{ addslashes($cat->name) }}')" class="text-white! hover:underline">
                                         {{ $cnt }}
                                     </button>
                                 @else
@@ -257,9 +258,9 @@
                                 @endif
                             </flux:table.cell>
                         @endforeach
-                        <flux:table.cell class="bg-zinc-700 text-white text-center">
+                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
                             @if($this->allDocumentsCount > 0)
-                                <button type="button" wire:click="openDocumentListModalAll()" class="text-white hover:underline">
+                                <button type="button" wire:click="openDocumentListModalAll()" class="text-white! hover:underline">
                                     {{ $this->allDocumentsCount }}
                                 </button>
                             @else
@@ -270,6 +271,7 @@
                 </flux:table.rows>
             </flux:table>
         </div>
+        </flux:card>
 
         {{-- Document list modal --}}
         <flux:modal wire:model="showDocumentListModal" name="document-list" class="md:max-w-4xl">

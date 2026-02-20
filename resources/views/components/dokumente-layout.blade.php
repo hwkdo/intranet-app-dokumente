@@ -15,7 +15,21 @@
     $navItems = !empty($navItems) ? $navItems : $defaultNavItems;
 @endphp
 
-<x-intranet-app-base::app-layout 
+@push('app-styles')
+<style>
+    /*
+     * Dokumente-Matrix: Spaltenköpfe und Datenzellen erzwingen weiße Schrift.
+     * Flux setzt intern text-zinc-800 / text-zinc-500 auf th/td-Elementen.
+     * Da text-zinc-* alphabetisch nach text-white im generierten CSS steht,
+     * würde es text-white überschreiben – daher !important hier im Package.
+     */
+    [data-dokumente-matrix] [data-flux-column] {
+        color: white !important;
+    }
+</style>
+@endpush
+
+<x-intranet-app-base::app-layout
     app-identifier="dokumente"
     :heading="$heading"
     :subheading="$subheading"

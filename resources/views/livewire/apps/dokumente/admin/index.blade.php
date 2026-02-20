@@ -20,7 +20,7 @@
         <flux:tab.panel name="kategorien">
             <div class="min-h-[400px] space-y-6">
                 @if($showCategoryForm)
-                    <flux:card>
+                    <flux:card class="glass-card">
                         <flux:heading size="md" class="mb-4">
                             {{ $editingCategoryId ? 'Kategorie bearbeiten' : 'Neue Kategorie' }}
                         </flux:heading>
@@ -35,7 +35,7 @@
                     </flux:card>
                 @endif
 
-                <flux:card>
+                <flux:card class="glass-card">
                     <div class="mb-4 flex justify-between">
                         <flux:heading size="lg">Kategorien</flux:heading>
                         <flux:button wire:click="startNewCategory" variant="primary" size="sm">Neue Kategorie</flux:button>
@@ -67,20 +67,20 @@
 
         <flux:tab.panel name="statistiken">
             <div class="min-h-[400px]">
-                <flux:card>
+                <flux:card class="glass-card">
                     <flux:heading size="lg" class="mb-4">App-Statistiken</flux:heading>
                     <flux:text class="mb-6">
                         Übersicht über die Nutzung der Dokumente App.
                     </flux:text>
 
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        <div class="rounded-lg border p-4">
+                        <div class="rounded-xl border border-[#d0e3f9]/80 dark:border-white/10 bg-[#d0e3f9]/40 dark:bg-[#073070]/40 p-4">
                             <flux:heading size="md">Dokumente gesamt</flux:heading>
-                            <flux:text size="xl" class="mt-2">{{ \Hwkdo\IntranetAppDokumente\Models\Document::count() }}</flux:text>
+                            <flux:text size="xl" class="mt-2 font-semibold text-[#073070] dark:text-white">{{ \Hwkdo\IntranetAppDokumente\Models\Document::count() }}</flux:text>
                         </div>
-                        <div class="rounded-lg border p-4">
+                        <div class="rounded-xl border border-[#d0e3f9]/80 dark:border-white/10 bg-[#d0e3f9]/40 dark:bg-[#073070]/40 p-4">
                             <flux:heading size="md">Kategorien</flux:heading>
-                            <flux:text size="xl" class="mt-2">{{ \Hwkdo\IntranetAppDokumente\Models\DocumentCategory::count() }}</flux:text>
+                            <flux:text size="xl" class="mt-2 font-semibold text-[#073070] dark:text-white">{{ \Hwkdo\IntranetAppDokumente\Models\DocumentCategory::count() }}</flux:text>
                         </div>
                     </div>
                 </flux:card>
