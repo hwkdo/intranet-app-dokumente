@@ -11,10 +11,19 @@ state(['activeTab' => 'einstellungen']);
 <x-intranet-app-formwerk::formwerk-layout heading="Formwerk App" subheading="Admin">
     <flux:tab.group>
         <flux:tabs wire:model="activeTab">
+            <flux:tab name="hintergrundbild" icon="photo">Hintergrundbild</flux:tab>
             <flux:tab name="einstellungen" icon="cog-6-tooth">Einstellungen</flux:tab>
             <flux:tab name="statistiken" icon="chart-bar">Statistiken</flux:tab>
         </flux:tabs>
-        
+
+        <flux:tab.panel name="hintergrundbild">
+            <div style="min-height: 400px;">
+                @livewire('intranet-app-base::app-background-image', [
+                    'appIdentifier' => 'formwerk',
+                ])
+            </div>
+        </flux:tab.panel>
+
         <flux:tab.panel name="einstellungen">
             <div style="min-height: 400px;">
                 @livewire('intranet-app-base::admin-settings', [

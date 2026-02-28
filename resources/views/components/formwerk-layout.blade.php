@@ -15,7 +15,16 @@
     ];
     
     $navItems = !empty($navItems) ? $navItems : $defaultNavItems;
+    $customBgUrl = \Hwkdo\IntranetAppBase\Models\AppBackground::getCustomBackgroundUrl('formwerk');
 @endphp
+
+@if($customBgUrl)
+    @push('app-styles')
+    <style data-app-bg data-ts="{{ uniqid() }}">
+        :root { --app-bg-image: url('{{ $customBgUrl }}'); }
+    </style>
+    @endpush
+@endif
 
 @if(request()->routeIs('apps.formwerk.index'))
     <x-intranet-app-base::app-layout 
