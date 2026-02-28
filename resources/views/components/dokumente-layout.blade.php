@@ -13,7 +13,16 @@
     ];
     
     $navItems = !empty($navItems) ? $navItems : $defaultNavItems;
+    $customBgUrl = \Hwkdo\IntranetAppBase\Models\AppBackground::getCustomBackgroundUrl('dokumente');
 @endphp
+
+@if($customBgUrl)
+    @push('app-styles')
+    <style data-app-bg data-ts="{{ uniqid() }}">
+        :root { --app-bg-image: url('{{ $customBgUrl }}'); }
+    </style>
+    @endpush
+@endif
 
 @push('app-styles')
 <style>
