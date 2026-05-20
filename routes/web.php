@@ -10,6 +10,7 @@ Route::middleware(['web','auth','can:see-app-formwerk'])->group(function () {
     Volt::route('apps/formwerk', 'apps.formwerk.index')->name('apps.formwerk.index');
     Volt::route('apps/formwerk/example', 'apps.formwerk.example')->name('apps.formwerk.example');
     Volt::route('apps/formwerk/settings/user', 'apps.formwerk.settings.user')->name('apps.formwerk.settings.user');
+    Volt::route('apps/formwerk/info', 'apps.formwerk.info')->name('apps.formwerk.info');
     
     // Typen-Verwaltung
     Volt::route('apps/formwerk/typen', 'apps.formwerk.typen.index')->name('apps.formwerk.typen.index');
