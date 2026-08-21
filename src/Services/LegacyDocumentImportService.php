@@ -142,12 +142,13 @@ class LegacyDocumentImportService
                         originalFileName: basename((string) ($legacy['objekt'] ?? 'dokument.bin')),
                         showInNewsSlider: false,
                         dispatchNews: false,
+                        requireReAcknowledgment: false,
                     );
                 } elseif ($needsFile) {
                     $report['missing_file']++;
                 }
 
-                if ($requiresAck && $existing->currentVersion) {
+                if ($requiresAck && $existing->fresh(['currentVersion'])->currentVersion) {
                     app(DocumentAcknowledgmentService::class)->seedForAllAppUsers($existing->currentVersion);
                 }
 
