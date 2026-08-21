@@ -19,7 +19,8 @@ class DocumentNotificationDispatcher
         $userClass = config('intranet-app-dokumente.user_model', User::class);
 
         $userClass::permission('see-app-dokumente')
-            ->select(['id', 'email', 'socialite_id', 'settings'])
+            ->aktiv()
+            ->select(['id', 'email', 'socialite_id', 'settings', 'active'])
             ->chunkById(200, function ($users) use ($document): void {
                 foreach ($users as $user) {
                     try {
@@ -49,6 +50,7 @@ class DocumentNotificationDispatcher
         }
 
         $userClass::query()
+            ->aktiv()
             ->whereIn('id', $recipientIds)
             ->get()
             ->each(function ($user) use ($document): void {
