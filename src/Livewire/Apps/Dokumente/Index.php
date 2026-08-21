@@ -1,28 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Hwkdo\IntranetAppDokumente\Livewire\Apps\Dokumente;
 
+use App\Models\Gvp;
 use App\Models\User;
 use Flux\Flux;
+use Hwkdo\IntranetAppDokumente\Enums\DocumentNewsTitleImageMode;
+use Hwkdo\IntranetAppDokumente\Livewire\Concerns\ManagesDocuments;
 use Hwkdo\IntranetAppDokumente\Models\Document;
-use Hwkdo\IntranetAppDokumente\Models\DocumentCategory;
+use Hwkdo\IntranetAppDokumente\Services\DocumentLifecycleService;
 use Hwkdo\IntranetAppDokumente\Services\DocumentMatrixService;
+use Hwkdo\IntranetAppDokumente\Support\DocumentPermissions;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 
 class Index extends Component
 {
-    use WithFileUploads;
+    use ManagesDocuments;
 
-    /** @var array<int, bool> opened GB row ids */
+    /** @var array<int, bool> */
     public array $openedGbIds = [];
 
     public bool $stabOpened = false;
 
     public bool $showDocumentListModal = false;
 
-    /** @var \Illuminate\Support\Collection<int, Document> */
+    /** @var Collection<int, Document> */
     public $modalDocuments;
 
     public string $modalCategoryLabel = '';
@@ -41,38 +48,35 @@ class Index extends Component
 
     public ?int $uploadResponsibleId = null;
 
+    public ?int $uploadGvpId = null;
+
     public ?int $uploadCategoryId = null;
 
+    public bool $uploadRequiresAcknowledgment = false;
+
+    public bool $uploadShowInNewsSlider = false;
+
+    public string $uploadNewsTitleImageMode = 'auto';
+
+    public $uploadNewsTitleImage = null;
+
     public $uploadFile = null;
-
-    public bool $showEditModal = false;
-
-    public ?int $editingDocumentId = null;
-
-    public string $editTitle = '';
-
-    public string $editDescription = '';
-
-    public ?string $editGueltigBis = null;
-
-    public bool $editAktiv = true;
-
-    public ?int $editResponsibleId = null;
-
-    public ?int $editCategoryId = null;
-
-    public $editFile = null;
 
     public function mount(): void
     {
         $this->authorize('see-app-dokumente');
         $this->modalDocuments = collect();
         $this->uploadResponsibleId = auth()->id();
+
+        $documentId = request()->integer('document');
+        if ($documentId > 0) {
+            $this->openDetail($documentId);
+        }
     }
 
     public function openUploadModal(): void
     {
-        $this->authorize('upload-app-dokumente');
+        $this->authorize('create', Document::class);
         $this->resetUploadForm();
         $this->showUploadModal = true;
     }
@@ -90,111 +94,93 @@ class Index extends Component
         $this->uploadGueltigBis = null;
         $this->uploadAktiv = true;
         $this->uploadResponsibleId = auth()->id();
+        $this->uploadGvpId = auth()->user()?->gvp_id;
         $this->uploadCategoryId = null;
+        $this->uploadRequiresAcknowledgment = false;
+        $this->uploadShowInNewsSlider = false;
+        $this->uploadNewsTitleImageMode = DocumentNewsTitleImageMode::Auto->value;
+        $this->uploadNewsTitleImage = null;
         $this->uploadFile = null;
         $this->resetValidation();
     }
 
+    public function updatedUploadResponsibleId(?int $value): void
+    {
+        if (! auth()->user()?->can(DocumentPermissions::chooseGvp())) {
+            return;
+        }
+
+        $this->uploadGvpId = $value
+            ? User::query()->whereKey($value)->value('gvp_id')
+            : null;
+    }
+
     public function saveUpload(): void
     {
-        $this->authorize('upload-app-dokumente');
-        $this->validate([
+        $this->authorize('create', Document::class);
+
+        if (! auth()->user()?->can(DocumentPermissions::kenntnisnahme())) {
+            $this->uploadRequiresAcknowledgment = false;
+        }
+
+        $canChooseGvp = auth()->user()?->can(DocumentPermissions::chooseGvp()) ?? false;
+
+        $rules = [
             'uploadTitle' => ['required', 'string', 'max:255'],
             'uploadDescription' => ['nullable', 'string'],
             'uploadGueltigBis' => ['nullable', 'date'],
             'uploadResponsibleId' => ['required', 'exists:users,id'],
             'uploadCategoryId' => ['required', 'exists:intranet_app_dokumente_categories,id'],
             'uploadFile' => ['required', 'file', 'max:51200'],
-        ]);
+            'uploadNewsTitleImageMode' => ['required', 'in:auto,custom,default'],
+        ];
+
+        if ($canChooseGvp) {
+            $rules['uploadGvpId'] = ['required', 'exists:gvps,id'];
+        }
+
+        if ($this->uploadNewsTitleImageMode === DocumentNewsTitleImageMode::Custom->value) {
+            $rules['uploadNewsTitleImage'] = ['required', 'image', 'max:10240'];
+        }
+
+        $this->validate($rules);
 
         $user = User::findOrFail($this->uploadResponsibleId);
+        $gvpId = $canChooseGvp ? $this->uploadGvpId : $user->gvp_id;
 
-        $document = Document::create([
-            'title' => $this->uploadTitle,
-            'description' => $this->uploadDescription ?: null,
-            'gueltig_bis' => $this->uploadGueltigBis ?: null,
-            'aktiv' => $this->uploadAktiv,
-            'uploader_id' => auth()->id(),
-            'responsible_id' => $this->uploadResponsibleId,
-            'gvp_id' => $user->gvp_id,
-            'category_id' => $this->uploadCategoryId,
-        ]);
-
-        $document->addMedia($this->uploadFile->getRealPath())
-            ->usingFileName($this->uploadFile->getClientOriginalName())
-            ->toMediaCollection('document');
+        app(DocumentLifecycleService::class)->createDocument(
+            attributes: [
+                'title' => $this->uploadTitle,
+                'description' => $this->uploadDescription ?: null,
+                'gueltig_bis' => $this->uploadGueltigBis ?: null,
+                'aktiv' => $this->uploadAktiv,
+                'uploader_id' => (int) auth()->id(),
+                'responsible_id' => $this->uploadResponsibleId,
+                'gvp_id' => $gvpId,
+                'category_id' => $this->uploadCategoryId,
+                'requires_acknowledgment' => $this->uploadRequiresAcknowledgment,
+            ],
+            file: $this->uploadFile,
+            showInNewsSlider: $this->uploadShowInNewsSlider,
+            newsTitleImageMode: DocumentNewsTitleImageMode::from($this->uploadNewsTitleImageMode),
+            customNewsTitleImage: $this->uploadNewsTitleImageMode === DocumentNewsTitleImageMode::Custom->value
+                ? $this->uploadNewsTitleImage
+                : null,
+        );
 
         Flux::toast(heading: 'Hochgeladen', text: 'Dokument wurde gespeichert.', variant: 'success');
         $this->closeUploadModal();
     }
 
-    public function openEditModal(int $documentId): void
-    {
-        $this->authorize('manage-app-dokumente');
-        $doc = Document::findOrFail($documentId);
-        $this->editingDocumentId = $documentId;
-        $this->editTitle = $doc->title;
-        $this->editDescription = $doc->description ?? '';
-        $this->editGueltigBis = $doc->gueltig_bis?->format('Y-m-d');
-        $this->editAktiv = $doc->aktiv;
-        $this->editResponsibleId = $doc->responsible_id;
-        $this->editCategoryId = $doc->category_id;
-        $this->editFile = null;
-        $this->showEditModal = true;
-    }
-
-    public function closeEditModal(): void
-    {
-        $this->showEditModal = false;
-        $this->editingDocumentId = null;
-        $this->resetValidation();
-    }
-
-    public function saveEdit(): void
-    {
-        $this->authorize('manage-app-dokumente');
-        $doc = Document::findOrFail($this->editingDocumentId);
-        $this->validate([
-            'editTitle' => ['required', 'string', 'max:255'],
-            'editDescription' => ['nullable', 'string'],
-            'editGueltigBis' => ['nullable', 'date'],
-            'editResponsibleId' => ['required', 'exists:users,id'],
-            'editCategoryId' => ['required', 'exists:intranet_app_dokumente_categories,id'],
-            'editFile' => ['nullable', 'file', 'max:51200'],
-        ]);
-
-        $user = User::findOrFail($this->editResponsibleId);
-        $doc->update([
-            'title' => $this->editTitle,
-            'description' => $this->editDescription ?: null,
-            'gueltig_bis' => $this->editGueltigBis ?: null,
-            'aktiv' => $this->editAktiv,
-            'responsible_id' => $this->editResponsibleId,
-            'gvp_id' => $user->gvp_id,
-            'category_id' => $this->editCategoryId,
-        ]);
-
-        if ($this->editFile) {
-            $doc->clearMediaCollection('document');
-            $doc->addMedia($this->editFile->getRealPath())
-                ->usingFileName($this->editFile->getClientOriginalName())
-                ->toMediaCollection('document');
-        }
-
-        Flux::toast(heading: 'Gespeichert', text: 'Dokument wurde aktualisiert.', variant: 'success');
-        $this->closeEditModal();
-        $this->showDocumentListModal = false;
-    }
-
     #[Computed]
-    public function usersForSelect(): \Illuminate\Support\Collection
+    public function gvpsForSelect(): Collection
     {
-        return User::query()
-            ->where('active', true)
-            ->orderBy('vorname')
-            ->orderBy('nachname')
-            ->get()
-            ->mapWithKeys(fn (User $u) => [$u->id => $u->vorname.' '.$u->nachname]);
+        return Gvp::query()
+            ->orderBy('kuerzel')
+            ->orderBy('nummer')
+            ->orderBy('name')
+            ->get(['id', 'kuerzel', 'nummer', 'name'])
+            ->mapWithKeys(fn (Gvp $gvp) => [$gvp->id => $gvp->bezeichnung]);
     }
 
     #[Computed]
@@ -210,7 +196,7 @@ class Index extends Component
     }
 
     #[Computed]
-    public function categories(): \Illuminate\Support\Collection
+    public function categories(): Collection
     {
         return $this->matrixService->getCategories();
     }
@@ -222,8 +208,6 @@ class Index extends Component
     }
 
     /**
-     * Zähler-Matrix (eine Abfrage) für schnelles Rendern der Tabelle.
-     *
      * @return array<string, mixed>
      */
     #[Computed]
@@ -251,34 +235,14 @@ class Index extends Component
         return in_array($id, $this->openedGbIds, true);
     }
 
-    public function getDocumentsForCell(?int $categoryId, array $gvpIds): \Illuminate\Support\Collection
-    {
-        return $this->matrixService->getDocumentsForCell($categoryId, $gvpIds);
-    }
-
-    public function getDocumentsForGvpRecursive(?int $categoryId, int $gvpId): \Illuminate\Support\Collection
-    {
-        return $this->matrixService->getDocumentsForGvpRecursive($categoryId, $gvpId);
-    }
-
-    public function getDocumentsForGvpDirect(?int $categoryId, int $gvpId): \Illuminate\Support\Collection
-    {
-        return $this->matrixService->getDocumentsForGvpDirect($categoryId, $gvpId);
-    }
-
-    public function getDocumentsForStab(?int $categoryId): \Illuminate\Support\Collection
-    {
-        return $this->matrixService->getDocumentsForStab($categoryId);
-    }
-
+    /**
+     * @return array<int>
+     */
     public function getStabGvpIds(): array
     {
         return $this->matrixService->getStabGvpIds();
     }
 
-    /**
-     * @param  string  $gvpIdsComma  Comma-separated GVP IDs
-     */
     public function openDocumentListModal(?int $categoryId, string $gvpIdsComma, string $categoryLabel, string $gvpLabel): void
     {
         $gvpIds = array_filter(array_map('intval', explode(',', $gvpIdsComma)));
@@ -309,7 +273,7 @@ class Index extends Component
         $this->showDocumentListModal = false;
     }
 
-    public function render(): \Illuminate\Contracts\View\View
+    public function render(): View
     {
         return view('intranet-app-dokumente::livewire.apps.dokumente.index')
             ->layout('components.layouts.app', [

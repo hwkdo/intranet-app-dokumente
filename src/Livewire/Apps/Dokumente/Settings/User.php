@@ -2,6 +2,7 @@
 
 namespace Hwkdo\IntranetAppDokumente\Livewire\Apps\Dokumente\Settings;
 
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class User extends Component
@@ -11,7 +12,7 @@ class User extends Component
         $this->authorize('see-app-dokumente');
     }
 
-    public function render(): \Illuminate\Contracts\View\View
+    public function render(): View
     {
         return view('intranet-app-dokumente::livewire.apps.dokumente.settings.user')
             ->layout('components.layouts.app', [

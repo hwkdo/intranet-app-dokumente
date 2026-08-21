@@ -4,11 +4,13 @@ namespace Hwkdo\IntranetAppDokumente\Livewire\Apps\Dokumente\Admin;
 
 use Flux\Flux;
 use Hwkdo\IntranetAppDokumente\Models\DocumentCategory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Component;
 
 class Index extends Component
 {
-    public string $activeTab = 'einstellungen';
+    public string $activeTab = 'dokumente';
 
     public ?int $editingCategoryId = null;
 
@@ -21,6 +23,13 @@ class Index extends Component
     public function mount(): void
     {
         $this->authorize('manage-app-dokumente');
+
+        $tab = request()->query('tab');
+        $allowed = ['dokumente', 'news-rahmen', 'hintergrundbild', 'einstellungen', 'kategorien', 'statistiken'];
+
+        if (is_string($tab) && in_array($tab, $allowed, true)) {
+            $this->activeTab = $tab;
+        }
     }
 
     public function startEditCategory(int $id): void
@@ -87,12 +96,12 @@ class Index extends Component
         $this->showCategoryForm = false;
     }
 
-    public function getCategoriesProperty(): \Illuminate\Database\Eloquent\Collection
+    public function getCategoriesProperty(): Collection
     {
         return DocumentCategory::orderBy('sort_order')->orderBy('name')->get();
     }
 
-    public function render(): \Illuminate\Contracts\View\View
+    public function render(): View
     {
         return view('intranet-app-dokumente::livewire.apps.dokumente.admin.index')
             ->layout('components.layouts.app', [

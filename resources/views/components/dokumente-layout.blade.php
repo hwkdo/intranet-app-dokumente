@@ -6,11 +6,11 @@
 
 @php
     $defaultNavItems = [
-        ['label' => 'Übersicht', 'href' => route('apps.dokumente.index'), 'icon' => 'home', 'description' => 'Zurück zur Übersicht', 'buttonText' => 'Übersicht anzeigen'],
-        ['label' => 'Beispielseite', 'href' => route('apps.dokumente.example'), 'icon' => 'document-text', 'description' => 'Beispielseite anzeigen', 'buttonText' => 'Beispielseite öffnen'],
+        ['label' => 'Matrix', 'href' => route('apps.dokumente.index'), 'icon' => 'home', 'description' => 'Dokumenten-Matrix', 'buttonText' => 'Matrix öffnen'],
+        ['label' => 'Meine Dokumente', 'href' => route('apps.dokumente.meine-dokumente'), 'icon' => 'document-text', 'description' => 'Eigene Dokumente verwalten', 'buttonText' => 'Öffnen'],
         ['label' => 'Meine Einstellungen', 'href' => route('apps.dokumente.settings.user'), 'icon' => 'cog-6-tooth', 'description' => 'Persönliche Einstellungen anpassen', 'buttonText' => 'Einstellungen öffnen'],
         ['label' => 'App-Info', 'href' => route('apps.dokumente.info'), 'icon' => 'information-circle', 'description' => 'Installierte Version und Release-Historie', 'buttonText' => 'App-Info anzeigen'],
-        ['label' => 'Admin', 'href' => route('apps.dokumente.admin.index'), 'icon' => 'shield-check', 'description' => 'Administrationsbereich verwalten', 'buttonText' => 'Admin öffnen', 'permission' => 'manage-app-dokumente']
+        ['label' => 'Admin', 'href' => route('apps.dokumente.admin.index'), 'icon' => 'shield-check', 'description' => 'Administrationsbereich verwalten', 'buttonText' => 'Admin öffnen', 'permission' => 'manage-app-dokumente'],
     ];
     
     $navItems = !empty($navItems) ? $navItems : $defaultNavItems;

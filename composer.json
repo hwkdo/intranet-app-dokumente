@@ -24,7 +24,8 @@
         "hwkdo/intranet-app-base": "dev-main || ^1.0",
         "spatie/laravel-permission": "^6.16",
         "livewire/livewire": "^4",
-        "livewire/flux-pro": "^2.0"
+        "livewire/flux-pro": "^2.0",
+        "spatie/laravel-medialibrary": "^11.0"
     },
     "require-dev": {
         "laravel/pint": "^1.14",
@@ -36,7 +37,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Hwkdo\\IntranetAppDokumente\\": "src/"
+            "Hwkdo\\IntranetAppDokumente\\": "src/",
+            "Hwkdo\\IntranetAppDokumente\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {

@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Hwkdo\IntranetAppDokumente\Models;
 
 use Hwkdo\IntranetAppDokumente\Data\AppSettings;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class IntranetAppDokumenteSettings extends Model
 {
@@ -16,8 +19,35 @@ class IntranetAppDokumenteSettings extends Model
         ];
     }
 
-    public static function current(): IntranetAppDokumenteSettings|null
+    public static function current(): ?IntranetAppDokumenteSettings
     {
         return self::orderBy('version', 'desc')->first();
+    }
+
+    public static function persistAppSettings(AppSettings $settings): IntranetAppDokumenteSettings
+    {
+        $current = static::current();
+
+        if ($current !== null) {
+            $current->update(['settings' => $settings]);
+
+            return $current->refresh();
+        }
+
+        return static::create([
+            'version' => 1,
+            'settings' => $settings,
+        ]);
+    }
+
+    public static function resolvedAppSettings(): AppSettings
+    {
+        if (! Schema::hasTable((new static)->getTable())) {
+            return new AppSettings;
+        }
+
+        $row = static::current();
+
+        return $row?->settings instanceof AppSettings ? $row->settings : new AppSettings;
     }
 }

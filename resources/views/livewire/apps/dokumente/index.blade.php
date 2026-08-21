@@ -18,7 +18,7 @@
                     Alle {{ $this->allDocumentsCount }} Dokumente
                 </flux:button>
             @endif
-            @can('upload-app-dokumente')
+            @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::upload())
                 <flux:button variant="primary" wire:click="openUploadModal">
                     Dokument hochladen
                 </flux:button>
@@ -67,9 +67,9 @@
                     <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! text-center w-12">∑</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
-                    {{-- HGF row --}}
+                    {{-- HGF row (nur Dokumente mit gvp_id = HGF, kein Rollup) --}}
                     <flux:table.row>
-                        @php $hgfIds = implode(',', $hgf->getDescendantIds()); $m = $this->countMatrix['hgf']; @endphp
+                        @php $hgfDirectId = (string) $hgf->id; $m = $this->countMatrix['hgf']; @endphp
                         <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium">
                             {{ $hgf->bezeichnung }}
                         </flux:table.cell>
@@ -77,7 +77,7 @@
                             @php $cnt = $m[$cat->id] ?? 0; @endphp
                             <flux:table.cell class="bg-white/50 dark:bg-[#04214e]/40 text-center">
                                 @if($cnt > 0)
-                                    <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $hgfIds }}', '{{ addslashes($cat->name) }}', '{{ addslashes($hgf->bezeichnung) }}')" class="text-blue-600 hover:underline">
+                                    <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $hgfDirectId }}', '{{ addslashes($cat->name) }}', '{{ addslashes($hgf->bezeichnung) }}')" class="text-blue-600 hover:underline">
                                         {{ $cnt }}
                                     </button>
                                 @else
@@ -88,7 +88,7 @@
                         @php $hgfAll = $m['all'] ?? 0; @endphp
                         <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
                             @if($hgfAll > 0)
-                                <button type="button" wire:click="openDocumentListModal(null, '{{ $hgfIds }}', 'Alle', '{{ addslashes($hgf->bezeichnung) }}')" class="text-white! hover:underline">
+                                <button type="button" wire:click="openDocumentListModal(null, '{{ $hgfDirectId }}', 'Alle', '{{ addslashes($hgf->bezeichnung) }}')" class="text-white! hover:underline">
                                     {{ $hgfAll }}
                                 </button>
                             @else
@@ -285,20 +285,24 @@
                     </flux:table.columns>
                     <flux:table.rows>
                         @foreach($modalDocuments ?? [] as $doc)
+                            @php
+                                $media = $doc->currentVersion?->getFirstMedia('document');
+                            @endphp
                             <flux:table.row>
                                 <flux:table.cell>
-                                    @if($doc->hasMedia('document') && $doc->getFirstMedia('document')->hasGeneratedConversion('thumb'))
-                                        <img src="{{ $doc->getFirstMedia('document')->getUrl('thumb') }}" alt="" class="h-12 w-auto object-contain" />
+                                    @if($media && $media->hasGeneratedConversion('thumb'))
+                                        <img src="{{ $media->getUrl('thumb') }}" alt="" class="h-12 w-auto object-contain" />
                                     @else
                                         <flux:icon name="document" class="size-12 text-zinc-400" />
                                     @endif
                                 </flux:table.cell>
-                                <flux:table.cell>{{ $doc->title }}</flux:table.cell>
                                 <flux:table.cell>
-                                    <flux:button size="sm" href="{{ route('apps.dokumente.download', $doc) }}" target="_blank" variant="primary">Download</flux:button>
-                                    @can('manage-app-dokumente')
-                                        <flux:button size="sm" wire:click="openEditModal({{ $doc->id }})" variant="ghost">Bearbeiten</flux:button>
-                                    @endcan
+                                    <button type="button" class="text-left underline" wire:click="openDetail({{ $doc->id }})">
+                                        {{ $doc->title }}
+                                    </button>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    <flux:button size="sm" wire:click="openDetail({{ $doc->id }})" variant="primary">Details</flux:button>
                                 </flux:table.cell>
                             </flux:table.row>
                         @endforeach
@@ -310,25 +314,73 @@
             </div>
         </flux:modal>
 
-        @can('upload-app-dokumente')
+        @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::upload())
             <flux:modal wire:model="showUploadModal" name="upload-document" class="md:max-w-2xl">
                 <form wire:submit="saveUpload" class="space-y-4">
                     <flux:heading size="lg" class="mb-4">Dokument hochladen</flux:heading>
                     <flux:input wire:model="uploadTitle" label="Titel" required />
                     <flux:textarea wire:model="uploadDescription" label="Beschreibung" rows="3" />
                     <flux:input wire:model="uploadGueltigBis" type="date" label="Gültig bis (leer = unbegrenzt)" />
-                    <flux:checkbox wire:model="uploadAktiv" label="Aktiv" />
-                    <flux:select wire:model.live="uploadResponsibleId" label="Verantwortliche/r" placeholder="Verantwortliche/n wählen" required>
+                    <flux:switch wire:model="uploadAktiv" label="Aktiv" />
+                    <flux:select wire:model.live="uploadResponsibleId" variant="listbox" searchable label="Verantwortliche/r" placeholder="Verantwortliche/n suchen…" required>
                         @foreach($this->usersForSelect as $id => $label)
                             <flux:select.option :value="$id">{{ $label }}</flux:select.option>
                         @endforeach
                     </flux:select>
-                    <flux:select wire:model.live="uploadCategoryId" label="Kategorie" placeholder="Kategorie wählen" required>
+                    @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::chooseGvp())
+                        <flux:select wire:model.live="uploadGvpId" variant="listbox" searchable label="GVP" placeholder="GVP auswählen" required>
+                            @foreach($this->gvpsForSelect as $id => $label)
+                                <flux:select.option :value="$id">{{ $label }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    @endcan
+                    <flux:select wire:model.live="uploadCategoryId" variant="listbox" label="Kategorie" placeholder="Kategorie auswählen" required>
                         @foreach($this->categories as $cat)
                             <flux:select.option :value="$cat->id">{{ $cat->name }}</flux:select.option>
                         @endforeach
                     </flux:select>
-                    <flux:input type="file" wire:model="uploadFile" label="Datei" required />
+                    @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::kenntnisnahme())
+                        <flux:switch wire:model="uploadRequiresAcknowledgment" label="Zur Kenntnisnahme" />
+                    @endcan
+                    <flux:switch wire:model="uploadShowInNewsSlider" label="In News-Slider anzeigen" />
+                    <flux:radio.group wire:model.live="uploadNewsTitleImageMode" label="News-Titelbild">
+                        <flux:radio value="auto" label="Automatisch generiertes Titelbild verwenden" description="Dokument-Vorschau im Rahmenbild" />
+                        <flux:radio value="custom" label="Eigenes Titelbild" description="Eigenes Bild hochladen" />
+                        <flux:radio value="default" label="Standard-News-Titelbild verwenden" description="Allgemeines Intranet-Standardbild" />
+                    </flux:radio.group>
+                    @if($uploadNewsTitleImageMode === 'custom')
+                        <flux:file-upload wire:model="uploadNewsTitleImage" label="Eigenes Titelbild">
+                            <flux:file-upload.dropzone
+                                heading="Titelbild hierher ziehen oder auswählen"
+                                text="JPG, PNG, WebP · max. 10 MB"
+                                with-progress
+                            />
+                        </flux:file-upload>
+                        @if($uploadNewsTitleImage)
+                            <flux:file-item :heading="$uploadNewsTitleImage->getClientOriginalName()" :size="$uploadNewsTitleImage->getSize()">
+                                <x-slot:actions>
+                                    <flux:file-item.remove wire:click="$set('uploadNewsTitleImage', null)" />
+                                </x-slot:actions>
+                            </flux:file-item>
+                        @endif
+                        @error('uploadNewsTitleImage')
+                            <flux:text class="text-red-600">{{ $message }}</flux:text>
+                        @enderror
+                    @endif
+                    <flux:file-upload wire:model="uploadFile" label="Datei">
+                        <flux:file-upload.dropzone
+                            heading="Datei hierher ziehen oder auswählen"
+                            text="Max. 50 MB"
+                            with-progress
+                        />
+                    </flux:file-upload>
+                    @if($uploadFile)
+                        <flux:file-item :heading="$uploadFile->getClientOriginalName()" :size="$uploadFile->getSize()">
+                            <x-slot:actions>
+                                <flux:file-item.remove wire:click="$set('uploadFile', null)" />
+                            </x-slot:actions>
+                        </flux:file-item>
+                    @endif
                     @error('uploadFile')
                         <flux:text class="text-red-600">{{ $message }}</flux:text>
                     @enderror
@@ -340,35 +392,7 @@
             </flux:modal>
         @endcan
 
-        @can('manage-app-dokumente')
-            <flux:modal wire:model="showEditModal" name="edit-document" class="md:max-w-2xl">
-                <form wire:submit="saveEdit" class="space-y-4">
-                    <flux:heading size="lg" class="mb-4">Dokument bearbeiten</flux:heading>
-                    <flux:input wire:model="editTitle" label="Titel" required />
-                    <flux:textarea wire:model="editDescription" label="Beschreibung" rows="3" />
-                    <flux:input wire:model="editGueltigBis" type="date" label="Gültig bis (leer = unbegrenzt)" />
-                    <flux:checkbox wire:model="editAktiv" label="Aktiv" />
-                    <flux:select wire:model="editResponsibleId" label="Verantwortliche/r" placeholder="Verantwortliche/n wählen" required>
-                        @foreach($this->usersForSelect as $id => $label)
-                            <flux:select.option :value="$id">{{ $label }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    <flux:select wire:model="editCategoryId" label="Kategorie" placeholder="Kategorie wählen" required>
-                        @foreach($this->categories as $cat)
-                            <flux:select.option :value="$cat->id">{{ $cat->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    <flux:input type="file" wire:model="editFile" label="Neue Datei (optional, ersetzt bestehende)" />
-                    @error('editFile')
-                        <flux:text class="text-red-600">{{ $message }}</flux:text>
-                    @enderror
-                    <div class="flex gap-2 pt-4">
-                        <flux:button type="submit" variant="primary">Speichern</flux:button>
-                        <flux:button type="button" wire:click="closeEditModal" variant="ghost">Abbrechen</flux:button>
-                    </div>
-                </form>
-            </flux:modal>
-        @endcan
+        @include('intranet-app-dokumente::livewire.apps.dokumente.partials.document-modals')
     @else
         <flux:text>Keine GVP-Struktur vorhanden.</flux:text>
     @endif

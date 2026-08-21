@@ -2,9 +2,9 @@
 
 namespace Hwkdo\IntranetAppDokumente\Tests;
 
+use Hwkdo\IntranetAppDokumente\IntranetAppDokumenteServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Hwkdo\IntranetAppDokumente\IntranetAppDokumenteServiceProvider;
 
 class TestCase extends Orchestra
 {

@@ -22,7 +22,7 @@ return new class extends Migration
 
         DB::table('intranet_app_dokumente_settings')->insert([
             'version' => 1,
-            'settings' => json_encode(new AppSettings()),
+            'settings' => json_encode(new AppSettings),
         ]);
     }
 
@@ -34,4 +34,3 @@ return new class extends Migration
         Schema::dropIfExists('intranet_app_dokumente_settings');
     }
 };
-

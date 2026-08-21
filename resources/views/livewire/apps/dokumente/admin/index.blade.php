@@ -1,12 +1,30 @@
 <x-intranet-app-dokumente::dokumente-layout heading="Dokumente App" subheading="Admin">
 <div>
-    <flux:tab.group>
-        <flux:tabs wire:model="activeTab">
-            <flux:tab name="hintergrundbild" icon="photo">Hintergrundbild</flux:tab>
-            <flux:tab name="einstellungen" icon="cog-6-tooth">Einstellungen</flux:tab>
-            <flux:tab name="kategorien" icon="folder">Kategorien</flux:tab>
-            <flux:tab name="statistiken" icon="chart-bar">Statistiken</flux:tab>
-        </flux:tabs>
+    <flux:tab.group class="space-y-4">
+        <flux:card class="glass-card p-2! sm:p-3!">
+            <flux:tabs wire:model.live="activeTab">
+                <flux:tab name="dokumente" icon="document-text">Dokumente</flux:tab>
+                <flux:tab name="news-rahmen" icon="newspaper">News-Rahmen</flux:tab>
+                <flux:tab name="hintergrundbild" icon="photo">Hintergrundbild</flux:tab>
+                <flux:tab name="einstellungen" icon="cog-6-tooth">Einstellungen</flux:tab>
+                <flux:tab name="kategorien" icon="folder">Kategorien</flux:tab>
+                <flux:tab name="statistiken" icon="chart-bar">Statistiken</flux:tab>
+            </flux:tabs>
+        </flux:card>
+
+        <flux:tab.panel name="dokumente">
+            @if($activeTab === 'dokumente')
+                <div class="min-h-[400px]">
+                    @livewire('intranet-app-dokumente::apps.dokumente.admin.documents', key('dokumente-admin-documents'))
+                </div>
+            @endif
+        </flux:tab.panel>
+
+        <flux:tab.panel name="news-rahmen">
+            <div class="min-h-[400px]">
+                @livewire('intranet-app-dokumente::apps.dokumente.admin.news-rahmen')
+            </div>
+        </flux:tab.panel>
 
         <flux:tab.panel name="hintergrundbild">
             <div class="min-h-[400px]">
@@ -17,17 +35,28 @@
         </flux:tab.panel>
 
         <flux:tab.panel name="einstellungen">
-            <div class="min-h-[400px]">
+            <div class="min-h-[400px] space-y-4">
+                @livewire('intranet-app-dokumente::apps.dokumente.admin.berechtigungen', key('dokumente-admin-berechtigungen'))
+
                 @livewire('intranet-app-base::admin-settings', [
                     'appIdentifier' => 'dokumente',
                     'settingsModelClass' => \Hwkdo\IntranetAppDokumente\Models\IntranetAppDokumenteSettings::class,
                     'appSettingsClass' => \Hwkdo\IntranetAppDokumente\Data\AppSettings::class,
+                    'excludedKeys' => [
+                        'newsFrameSlotX',
+                        'newsFrameSlotY',
+                        'newsFrameSlotWidth',
+                        'newsFrameSlotHeight',
+                        'permissionUpload',
+                        'permissionKenntnisnahme',
+                        'permissionChooseGvp',
+                    ],
                 ])
             </div>
         </flux:tab.panel>
 
         <flux:tab.panel name="kategorien">
-            <div class="min-h-[400px] space-y-6">
+            <div class="min-h-[400px] space-y-4">
                 @if($showCategoryForm)
                     <flux:card class="glass-card">
                         <flux:heading size="md" class="mb-4">
@@ -75,25 +104,23 @@
         </flux:tab.panel>
 
         <flux:tab.panel name="statistiken">
-            <div class="min-h-[400px]">
-                <flux:card class="glass-card">
-                    <flux:heading size="lg" class="mb-4">App-Statistiken</flux:heading>
-                    <flux:text class="mb-6">
-                        Übersicht über die Nutzung der Dokumente App.
-                    </flux:text>
+            <flux:card class="glass-card">
+                <flux:heading size="lg" class="mb-4">App-Statistiken</flux:heading>
+                <flux:text class="mb-6">
+                    Übersicht über die Nutzung der Dokumente App.
+                </flux:text>
 
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        <div class="rounded-xl border border-[#d0e3f9]/80 dark:border-white/10 bg-[#d0e3f9]/40 dark:bg-[#073070]/40 p-4">
-                            <flux:heading size="md">Dokumente gesamt</flux:heading>
-                            <flux:text size="xl" class="mt-2 font-semibold text-[#073070] dark:text-white">{{ \Hwkdo\IntranetAppDokumente\Models\Document::count() }}</flux:text>
-                        </div>
-                        <div class="rounded-xl border border-[#d0e3f9]/80 dark:border-white/10 bg-[#d0e3f9]/40 dark:bg-[#073070]/40 p-4">
-                            <flux:heading size="md">Kategorien</flux:heading>
-                            <flux:text size="xl" class="mt-2 font-semibold text-[#073070] dark:text-white">{{ \Hwkdo\IntranetAppDokumente\Models\DocumentCategory::count() }}</flux:text>
-                        </div>
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div class="rounded-xl border border-[#d0e3f9]/80 dark:border-white/10 bg-[#d0e3f9]/40 dark:bg-[#073070]/40 p-4">
+                        <flux:heading size="md">Dokumente gesamt</flux:heading>
+                        <flux:text size="xl" class="mt-2 font-semibold text-[#073070] dark:text-white">{{ \Hwkdo\IntranetAppDokumente\Models\Document::count() }}</flux:text>
                     </div>
-                </flux:card>
-            </div>
+                    <div class="rounded-xl border border-[#d0e3f9]/80 dark:border-white/10 bg-[#d0e3f9]/40 dark:bg-[#073070]/40 p-4">
+                        <flux:heading size="md">Kategorien</flux:heading>
+                        <flux:text size="xl" class="mt-2 font-semibold text-[#073070] dark:text-white">{{ \Hwkdo\IntranetAppDokumente\Models\DocumentCategory::count() }}</flux:text>
+                    </div>
+                </div>
+            </flux:card>
         </flux:tab.panel>
     </flux:tab.group>
 </div>

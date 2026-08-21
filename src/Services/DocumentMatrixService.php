@@ -5,12 +5,13 @@ namespace Hwkdo\IntranetAppDokumente\Services;
 use App\Models\Gvp;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Models\DocumentCategory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class DocumentMatrixService
 {
-    public const CACHE_KEY_COUNT_MATRIX = 'intranet_app_dokumente.count_matrix';
+    public const CACHE_KEY_COUNT_MATRIX = 'intranet_app_dokumente.count_matrix.v2';
 
     public static function clearCountMatrixCache(): void
     {
@@ -20,16 +21,13 @@ class DocumentMatrixService
     /**
      * Basis-Query für gültige Dokumente (aktiv, gueltig_bis >= heute oder null).
      *
-     * @return \Illuminate\Database\Eloquent\Builder<Document>
+     * @return Builder<Document>
      */
-    public function gueltigeDocumentsQuery(): \Illuminate\Database\Eloquent\Builder
+    public function gueltigeDocumentsQuery(): Builder
     {
         return Document::query()
-            ->where('aktiv', true)
-            ->where(function ($q) {
-                $q->whereNull('gueltig_bis')
-                    ->orWhere('gueltig_bis', '>=', today());
-            });
+            ->gueltig()
+            ->with(['currentVersion.media', 'category', 'uploader', 'responsible']);
     }
 
     /**
@@ -187,7 +185,7 @@ class DocumentMatrixService
      * Ermittelt für eine GVP-ID (inkl. Gruppe/Fachbereich) den zugehörigen GB und die Abteilung
      * durch Traversierung der Elternkette. Dokumente von G/FB werden so der übergeordneten Abteilung zugeordnet.
      *
-     * @param  \Illuminate\Support\Collection<int, Gvp>  $gvpsById  einmalig geladene GVPs keyed by id
+     * @param  Collection<int, Gvp>  $gvpsById  einmalig geladene GVPs keyed by id
      * @return array{stab: bool, stab_id: int|null, gb: int|null, abt: int|null}|null null wenn nicht unter HGF
      */
     public function getMatrixLocationForGvp(int $gvpId, int $hgfId, Collection $gvpsById): ?array
@@ -241,6 +239,7 @@ class DocumentMatrixService
     /**
      * Berechnet die Zähler-Matrix per Elternkette: Jede Dokument-GVP (inkl. Gruppe/FB) wird
      * dem zugehörigen GB und der übergeordneten Abteilung zugeordnet.
+     * HGF zählt nur Dokumente mit gvp_id = HGF (kein Rollup der Unterstruktur).
      *
      * @return array<string, mixed>
      */
@@ -248,7 +247,6 @@ class DocumentMatrixService
     {
         $structure = $this->getGvpStructure();
         $hgf = $structure['hgf'];
-        $stabs = $structure['stabs'];
         $gbs = $structure['gbs'];
 
         $rows = $this->gueltigeDocumentsQuery()
@@ -293,12 +291,17 @@ class DocumentMatrixService
                 continue;
             }
 
+            // HGF-Zeile: nur Dokumente mit Verantwortlichem direkt an der HGF-GVP
+            if ($gvpId === $hgfId) {
+                $addCount($matrix['hgf'], $catId);
+
+                continue;
+            }
+
             $loc = $locationByGvpId[$gvpId] ?? null;
             if (! $loc) {
                 continue;
             }
-
-            $addCount($matrix['hgf'], $catId);
 
             if ($loc['stab']) {
                 $addCount($matrix['stab'], $catId);

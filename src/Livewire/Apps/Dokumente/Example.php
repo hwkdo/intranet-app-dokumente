@@ -2,6 +2,7 @@
 
 namespace Hwkdo\IntranetAppDokumente\Livewire\Apps\Dokumente;
 
+use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
 class Example extends Component
@@ -19,7 +20,7 @@ class Example extends Component
         $this->exampleData['created_at'] = now()->format('d.m.Y H:i');
     }
 
-    public function render(): \Illuminate\Contracts\View\View
+    public function render(): View
     {
         return view('intranet-app-dokumente::livewire.apps.dokumente.example')
             ->layout('components.layouts.app', [
