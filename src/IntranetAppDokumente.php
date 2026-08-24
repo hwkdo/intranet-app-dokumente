@@ -7,15 +7,17 @@ namespace Hwkdo\IntranetAppDokumente;
 use Hwkdo\IntranetAppBase\Data\NotificationTypeDefinition;
 use Hwkdo\IntranetAppBase\Interfaces\IntranetAppInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesNotificationsInterface;
+use Hwkdo\IntranetAppBase\Interfaces\ProvidesSearchInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesTasksInterface;
 use Hwkdo\IntranetAppBase\Interfaces\TaskProviderInterface;
 use Hwkdo\IntranetAppDokumente\Data\AppSettings;
 use Hwkdo\IntranetAppDokumente\Data\UserSettings;
+use Hwkdo\IntranetAppDokumente\Search\DocumentsSearchSource;
 use Hwkdo\IntranetAppDokumente\Tasks\DocumentReviewTaskProvider;
 use Hwkdo\IntranetAppDokumente\Tasks\PendingAcknowledgmentTaskProvider;
 use Illuminate\Support\Collection;
 
-class IntranetAppDokumente implements IntranetAppInterface, ProvidesNotificationsInterface, ProvidesTasksInterface
+class IntranetAppDokumente implements IntranetAppInterface, ProvidesNotificationsInterface, ProvidesSearchInterface, ProvidesTasksInterface
 {
     public static function app_name(): string
     {
@@ -87,6 +89,16 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesNotification
                 description: 'Ein Dokument muss geprüft werden (verlängern, aktualisieren oder löschen).',
                 mandatory: true,
             ),
+        ];
+    }
+
+    /**
+     * @return list<class-string<\Hwkdo\IntranetAppBase\Interfaces\SearchSourceInterface>>
+     */
+    public static function searchSources(): array
+    {
+        return [
+            DocumentsSearchSource::class,
         ];
     }
 }

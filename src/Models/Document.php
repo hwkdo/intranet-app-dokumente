@@ -15,12 +15,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Laravel\Scout\Searchable;
 
 class Document extends Model
 {
     /** @use HasFactory<DocumentFactory> */
     use HasFactory;
 
+    use Searchable;
     use SoftDeletes;
 
     protected $table = 'intranet_app_dokumente_documents';
@@ -88,6 +90,50 @@ class Document extends Model
     public function histories(): HasMany
     {
         return $this->hasMany(DocumentHistory::class, 'document_id')->orderByDesc('created_at');
+    }
+
+    public function searchableAs(): string
+    {
+        return 'dokumente_documents';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
+    {
+        $vorname = trim((string) ($this->uploader?->vorname ?? ''));
+        $nachname = trim((string) ($this->uploader?->nachname ?? ''));
+
+        return [
+            'id' => (string) $this->id,
+            'title' => $this->title,
+            'description' => $this->description ?? '',
+            'category_name' => $this->category?->name ?? '',
+            'uploader_display' => trim($vorname.' '.$nachname),
+            'created_at' => $this->created_at?->timestamp ?? 0,
+        ];
+    }
+
+    public function shouldBeSearchable(): bool
+    {
+        return $this->isGueltig() && ! $this->trashed();
+    }
+
+    public function typesenseSearchParameters(): array
+    {
+        return [
+            'infix' => 'always',
+        ];
+    }
+
+    /**
+     * @param  Builder<Document>  $query
+     * @return Builder<Document>
+     */
+    protected function makeAllSearchableUsing(Builder $query): Builder
+    {
+        return $query->with(['category', 'uploader']);
     }
 
     public function isGueltig(): bool

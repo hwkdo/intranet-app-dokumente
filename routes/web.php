@@ -10,6 +10,7 @@ Route::middleware(['web', 'auth', 'can:see-app-dokumente'])->group(function (): 
     Route::livewire('apps/dokumente/meine', 'intranet-app-dokumente::apps.dokumente.meine-dokumente')->name('apps.dokumente.meine-dokumente');
     Route::livewire('apps/dokumente/settings/user', 'intranet-app-dokumente::apps.dokumente.settings.user')->name('apps.dokumente.settings.user');
     Route::livewire('apps/dokumente/info', 'intranet-app-dokumente::apps.dokumente.info')->name('apps.dokumente.info');
+    Route::livewire('apps/dokumente/suche', 'intranet-app-dokumente::apps.dokumente.search')->name('apps.dokumente.search');
 
     Route::get('apps/dokumente/download/{document}', DownloadDocumentController::class)
         ->whereNumber('document')

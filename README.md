@@ -7,6 +7,16 @@
 
 This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
 
+## Typesense-Suche
+
+Nach der Installation Dokumente indexieren:
+
+```bash
+php artisan scout:import "Hwkdo\IntranetAppDokumente\Models\Document"
+```
+
+Die App-Suche ist unter `/apps/dokumente/suche` erreichbar und in der globalen Header-Suche enthalten (bei Berechtigung `see-app-dokumente`).
+
 ## Support us
 
 [<img src="https://github-ads.s3.eu-central-1.amazonaws.com/intranet-app-dokumente.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/intranet-app-dokumente)
