@@ -44,23 +44,35 @@
             }"
         >
             <style>
-                [data-dokumente-matrix] th[data-flux-column]:not(:first-child):not(:last-child) {
-                    max-width: 140px;
-                    width: 140px;
-                    white-space: normal;
-                    word-break: break-word;
-                }
-                [data-dokumente-matrix] th[data-flux-column]:not(:first-child):not(:last-child) div {
-                    white-space: normal;
-                    word-break: break-word;
-                }
                 [x-cloak] { display: none !important; }
+                /*
+                 * Flux-Tabellen sind table-fixed + min-w-full. Ohne explizite Breite
+                 * für die GVP-Spalte landet der Restplatz dort (Ultrawide-Leerspalte).
+                 */
+                [data-dokumente-matrix] th[data-flux-column]:first-child,
+                [data-dokumente-matrix] td:first-child {
+                    width: 18rem;
+                    max-width: 18rem;
+                    white-space: normal;
+                    overflow-wrap: anywhere;
+                }
+                [data-dokumente-matrix] th[data-flux-column]:last-child,
+                [data-dokumente-matrix] td:last-child {
+                    width: 3rem;
+                }
+                [data-dokumente-matrix] th[data-flux-column]:not(:first-child):not(:last-child),
+                [data-dokumente-matrix] td:not(:first-child):not(:last-child) {
+                    width: auto;
+                    max-width: none;
+                    min-width: 6rem;
+                    white-space: normal;
+                }
             </style>
             <flux:table class="w-full" data-dokumente-matrix>
                 <flux:table.columns>
-                    <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! whitespace-nowrap"></flux:table.column>
+                    <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! w-72 max-w-72 whitespace-normal"></flux:table.column>
                     @foreach($categories as $cat)
-                        <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! text-center w-[140px] max-w-[140px]" align="center">
+                        <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! text-center" align="center">
                             <span class="block w-full text-center whitespace-normal break-words hyphens-auto text-sm">{{ $cat->name }}</span>
                         </flux:table.column>
                     @endforeach
@@ -70,7 +82,7 @@
                     {{-- HGF row (nur Dokumente mit gvp_id = HGF, kein Rollup) --}}
                     <flux:table.row>
                         @php $hgfDirectId = (string) $hgf->id; $m = $this->countMatrix['hgf']; @endphp
-                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium">
+                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium whitespace-normal">
                             {{ $hgf->bezeichnung }}
                         </flux:table.cell>
                         @foreach($categories as $cat)
@@ -100,7 +112,7 @@
                     {{-- Stab row (click to expand) --}}
                     <flux:table.row>
                         @php $stabIds = $this->getStabGvpIds(); $stabIdsStr = implode(',', $stabIds); $stabM = $this->countMatrix['stab']; @endphp
-                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium cursor-pointer select-none" @click="toggleStab()">
+                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium cursor-pointer select-none whitespace-normal" @click="toggleStab()">
                             Stab
                         </flux:table.cell>
                         @foreach($categories as $cat)
@@ -131,7 +143,7 @@
                     @foreach($stabs as $stab)
                         @php $stabDirect = $this->countMatrix['stabDirect'][$stab->id] ?? []; $stabDocCount = $stabDirect['all'] ?? 0; @endphp
                         <flux:table.row x-show="stabOpen" x-cloak>
-                                <flux:table.cell class="bg-[#456494] dark:bg-[#456494]/80 text-white!">{{ $stab->bezeichnung }}</flux:table.cell>
+                                <flux:table.cell class="bg-[#456494] dark:bg-[#456494]/80 text-white! whitespace-normal">{{ $stab->bezeichnung }}</flux:table.cell>
                                 @foreach($categories as $cat)
                                     @php $cnt = $stabDirect[$cat->id] ?? 0; @endphp
                                     <flux:table.cell class="text-center">
@@ -160,7 +172,7 @@
                     @foreach($gbs as $gb)
                         @php $gbIds = implode(',', $gb->getDescendantIds()); $gbM = $this->countMatrix['gb'][$gb->id] ?? []; @endphp
                         <flux:table.row>
-                            <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium cursor-pointer select-none" @click="toggleGb({{ $gb->id }})">
+                            <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium cursor-pointer select-none whitespace-normal" @click="toggleGb({{ $gb->id }})">
                                 {{ $gb->bezeichnung }}
                             </flux:table.cell>
                             @foreach($categories as $cat)
@@ -190,7 +202,7 @@
                         {{-- GB aufgeklappt (Optimistic UI: immer im DOM, Sichtbarkeit per Alpine) --}}
                         @php $gbDirectM = $this->countMatrix['gbDirect'][$gb->id] ?? []; $gbDirectCount = $gbDirectM['all'] ?? 0; @endphp
                         <flux:table.row x-show="openedGbIds.includes({{ $gb->id }})" x-cloak>
-                                <flux:table.cell class="bg-[#456494] dark:bg-[#456494]/80 text-white!">Geschäftsführung</flux:table.cell>
+                                <flux:table.cell class="bg-[#456494] dark:bg-[#456494]/80 text-white! whitespace-normal">Geschäftsführung</flux:table.cell>
                                 @foreach($categories as $cat)
                                     @php $cnt = $gbDirectM[$cat->id] ?? 0; @endphp
                                     <flux:table.cell class="text-center">
@@ -216,7 +228,7 @@
                             @foreach($gb->childGvps as $abt)
                                 @php $abtIds = implode(',', $abt->getDescendantIds()); $abtM = $this->countMatrix['abt'][$abt->id] ?? []; @endphp
                                 <flux:table.row x-show="openedGbIds.includes({{ $gb->id }})" x-cloak>
-                                    <flux:table.cell class="bg-[#456494] dark:bg-[#456494]/80 text-white!">{{ $abt->bezeichnung }}</flux:table.cell>
+                                    <flux:table.cell class="bg-[#456494] dark:bg-[#456494]/80 text-white! whitespace-normal">{{ $abt->bezeichnung }}</flux:table.cell>
                                     @foreach($categories as $cat)
                                         @php $cnt = $abtM[$cat->id] ?? 0; @endphp
                                         <flux:table.cell class="text-center">
@@ -245,7 +257,7 @@
 
                     {{-- Sum row --}}
                     <flux:table.row>
-                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium">∑</flux:table.cell>
+                        <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! font-medium whitespace-normal">∑</flux:table.cell>
                         @foreach($categories as $cat)
                             @php $cnt = $this->countMatrix['category'][$cat->id] ?? 0; @endphp
                             <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
