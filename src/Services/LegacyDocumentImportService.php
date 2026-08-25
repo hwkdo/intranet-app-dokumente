@@ -19,7 +19,7 @@ class LegacyDocumentImportService
     ) {}
 
     /**
-     * @return array{created: int, updated: int, skipped: int, missing_file: int, unmapped: int}
+     * @return array{created: int, updated: int, skipped: int, skipped_no_category: int, skipped_inactive: int, missing_file: int, unmapped: int}
      */
     public function import(IntranetLegacyService $legacyService, bool $dryRun = false): array
     {
@@ -27,13 +27,14 @@ class LegacyDocumentImportService
             'created' => 0,
             'updated' => 0,
             'skipped' => 0,
+            'skipped_no_category' => 0,
+            'skipped_inactive' => 0,
             'missing_file' => 0,
             'unmapped' => 0,
         ];
 
         $legacyDocuments = $legacyService->getDokumenteExport();
         $categoryMap = DocumentCategory::query()->pluck('id', 'name');
-        $sonstigesId = (int) ($categoryMap['Sonstiges'] ?? DocumentCategory::query()->value('id'));
 
         foreach ($legacyDocuments as $legacy) {
             $legacyId = (int) ($legacy['id'] ?? 0);
@@ -50,11 +51,27 @@ class LegacyDocumentImportService
                 continue;
             }
 
-            $categoryName = trim((string) ($legacy['matrixkategorie_name'] ?? ''));
-            $categoryId = (int) ($categoryMap[$categoryName] ?? $sonstigesId);
-            if ($categoryName !== '' && ! $categoryMap->has($categoryName)) {
-                $report['unmapped']++;
+            if (! (bool) ($legacy['aktiv'] ?? false)) {
+                $report['skipped_inactive']++;
+
+                continue;
             }
+
+            $categoryName = trim((string) ($legacy['matrixkategorie_name'] ?? ''));
+            if ($categoryName === '') {
+                $report['skipped_no_category']++;
+
+                continue;
+            }
+
+            if (! $categoryMap->has($categoryName)) {
+                $report['unmapped']++;
+                $report['skipped']++;
+
+                continue;
+            }
+
+            $categoryId = (int) $categoryMap[$categoryName];
 
             $uploaderId = User::query()->where('legacy_id', (int) ($legacy['uploader_id'] ?? 0))->value('id');
             $responsibleId = User::query()->where('legacy_id', (int) ($legacy['owner_id'] ?? 0))->value('id');
