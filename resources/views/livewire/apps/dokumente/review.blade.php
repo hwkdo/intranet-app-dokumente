@@ -1,6 +1,6 @@
 <div>
     <x-intranet-app-dokumente::dokumente-layout heading="Dokument prüfen" :subheading="$document->title">
-        <flux:card class="space-y-4">
+        <flux:card class="glass-card space-y-4">
             <flux:callout>
                 Bitte entscheiden Sie, wie mit diesem Dokument verfahren werden soll.
             </flux:callout>

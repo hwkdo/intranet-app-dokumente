@@ -186,6 +186,24 @@ class Document extends Model
     }
 
     /**
+     * Dokumente mit überschrittenem Gültigkeitsdatum (unabhängig von aktiv).
+     *
+     * @param  Builder<Document>  $query
+     * @return Builder<Document>
+     */
+    public function scopeAbgelaufen(Builder $query): Builder
+    {
+        return $query
+            ->whereNotNull('gueltig_bis')
+            ->where('gueltig_bis', '<', today());
+    }
+
+    public function isAbgelaufen(): bool
+    {
+        return $this->gueltig_bis !== null && $this->gueltig_bis->lt(today());
+    }
+
+    /**
      * @param  Builder<Document>  $query
      * @return Builder<Document>
      */

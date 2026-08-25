@@ -36,4 +36,12 @@ class DocumentFactory extends Factory
     {
         return $this->state(fn (): array => ['requires_acknowledgment' => true]);
     }
+
+    public function abgelaufen(): static
+    {
+        return $this->state(fn (): array => [
+            'gueltig_bis' => now()->subDay()->toDateString(),
+            'aktiv' => true,
+        ]);
+    }
 }

@@ -32,6 +32,8 @@ class Index extends Component
     /** @var Collection<int, Document> */
     public $modalDocuments;
 
+    public string $modalSearch = '';
+
     public string $modalCategoryLabel = '';
 
     public string $modalGvpLabel = '';
@@ -246,6 +248,7 @@ class Index extends Component
     public function openDocumentListModal(?int $categoryId, string $gvpIdsComma, string $categoryLabel, string $gvpLabel): void
     {
         $gvpIds = array_filter(array_map('intval', explode(',', $gvpIdsComma)));
+        $this->modalSearch = '';
         $this->modalDocuments = $this->matrixService->getDocumentsForCell($categoryId, $gvpIds);
         $this->modalCategoryLabel = $categoryLabel;
         $this->modalGvpLabel = $gvpLabel;
@@ -254,6 +257,7 @@ class Index extends Component
 
     public function openDocumentListModalByCategory(int $categoryId, string $categoryLabel): void
     {
+        $this->modalSearch = '';
         $this->modalDocuments = $this->matrixService->getDocumentsByCategory($categoryId);
         $this->modalCategoryLabel = $categoryLabel;
         $this->modalGvpLabel = 'Alle';
@@ -262,6 +266,7 @@ class Index extends Component
 
     public function openDocumentListModalAll(): void
     {
+        $this->modalSearch = '';
         $this->modalDocuments = $this->matrixService->getAllGueltigeDocuments();
         $this->modalCategoryLabel = 'Alle';
         $this->modalGvpLabel = 'Alle';
@@ -271,6 +276,29 @@ class Index extends Component
     public function closeDocumentListModal(): void
     {
         $this->showDocumentListModal = false;
+        $this->modalSearch = '';
+        $this->modalDocuments = collect();
+    }
+
+    /**
+     * @return Collection<int, Document>
+     */
+    #[Computed]
+    public function filteredModalDocuments(): Collection
+    {
+        $documents = collect($this->modalDocuments ?? []);
+        $search = trim($this->modalSearch);
+
+        if ($search === '') {
+            return $documents->values();
+        }
+
+        return $documents
+            ->filter(fn (Document $document): bool => str_contains(
+                mb_strtolower($document->title),
+                mb_strtolower($search),
+            ))
+            ->values();
     }
 
     public function render(): View

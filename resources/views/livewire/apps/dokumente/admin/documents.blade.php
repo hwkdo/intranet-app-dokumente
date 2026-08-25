@@ -2,6 +2,7 @@
     <flux:card class="glass-card space-y-4">
         <div class="flex flex-wrap items-center gap-4">
             <flux:input wire:model.live.debounce.300ms="search" placeholder="Suche…" icon="magnifying-glass" class="max-w-sm" />
+            <flux:switch wire:model.live="showExpiredOnly" label="Nur abgelaufene" />
             <flux:switch wire:model.live="showTrashed" label="Gelöschte anzeigen" />
         </div>
 
@@ -21,6 +22,11 @@
                         <flux:table.cell>
                             @if($doc->trashed())
                                 <flux:badge color="red">gelöscht</flux:badge>
+                            @elseif($doc->isAbgelaufen())
+                                <flux:badge color="amber">abgelaufen</flux:badge>
+                                @if(! $doc->aktiv)
+                                    <flux:badge class="ml-1">inaktiv</flux:badge>
+                                @endif
                             @elseif(! $doc->aktiv)
                                 <flux:badge>inaktiv</flux:badge>
                             @else

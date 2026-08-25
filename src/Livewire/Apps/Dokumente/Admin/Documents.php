@@ -20,6 +20,8 @@ class Documents extends Component
 
     public bool $showTrashed = false;
 
+    public bool $showExpiredOnly = false;
+
     public function mount(): void
     {
         $this->authorize('manage-app-dokumente');
@@ -30,14 +32,29 @@ class Documents extends Component
         $this->resetPage();
     }
 
+    public function updatedShowTrashed(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedShowExpiredOnly(): void
+    {
+        $this->resetPage();
+    }
+
     #[Computed]
     public function documents()
     {
         return Document::query()
             ->when($this->showTrashed, fn ($q) => $q->withTrashed())
+            ->when($this->showExpiredOnly, fn ($q) => $q->abgelaufen())
             ->with(['category', 'uploader', 'responsible', 'currentVersion'])
             ->when($this->search !== '', fn ($q) => $q->where('title', 'like', '%'.$this->search.'%'))
-            ->orderByDesc('updated_at')
+            ->when(
+                $this->showExpiredOnly,
+                fn ($q) => $q->orderBy('gueltig_bis')->orderBy('title'),
+                fn ($q) => $q->orderByDesc('updated_at'),
+            )
             ->paginate(25);
     }
 

@@ -289,6 +289,12 @@
         <flux:modal wire:model="showDocumentListModal" name="document-list" class="md:max-w-4xl">
             <div class="space-y-4">
                 <flux:heading size="lg">{{ $modalCategoryLabel }} in {{ $modalGvpLabel }}</flux:heading>
+                <flux:input
+                    wire:model.live.debounce.300ms="modalSearch"
+                    placeholder="Titel suchen…"
+                    icon="magnifying-glass"
+                    class="max-w-md"
+                />
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>Thumbnail</flux:table.column>
@@ -296,11 +302,11 @@
                         <flux:table.column>Aktionen</flux:table.column>
                     </flux:table.columns>
                     <flux:table.rows>
-                        @foreach($modalDocuments ?? [] as $doc)
+                        @foreach($this->filteredModalDocuments as $doc)
                             @php
                                 $media = $doc->currentVersion?->getFirstMedia('document');
                             @endphp
-                            <flux:table.row>
+                            <flux:table.row wire:key="modal-doc-{{ $doc->id }}">
                                 <flux:table.cell>
                                     @if($media && $media->hasGeneratedConversion('thumb'))
                                         <img src="{{ $media->getUrl('thumb') }}" alt="" class="h-12 w-auto object-contain" />
@@ -320,8 +326,14 @@
                         @endforeach
                     </flux:table.rows>
                 </flux:table>
-                @if(($modalDocuments ?? collect())->isEmpty())
-                    <flux:text>Keine Dokumente in dieser Auswahl.</flux:text>
+                @if($this->filteredModalDocuments->isEmpty())
+                    <flux:text>
+                        @if(trim($modalSearch) !== '')
+                            Keine Treffer für „{{ $modalSearch }}“.
+                        @else
+                            Keine Dokumente in dieser Auswahl.
+                        @endif
+                    </flux:text>
                 @endif
             </div>
         </flux:modal>
