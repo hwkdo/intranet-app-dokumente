@@ -11,7 +11,6 @@ use Hwkdo\IntranetAppBase\Interfaces\ProvidesSearchInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesTasksInterface;
 use Hwkdo\IntranetAppBase\Interfaces\TaskProviderInterface;
 use Hwkdo\IntranetAppDokumente\Data\AppSettings;
-use Hwkdo\IntranetAppDokumente\Data\UserSettings;
 use Hwkdo\IntranetAppDokumente\Search\DocumentsSearchSource;
 use Hwkdo\IntranetAppDokumente\Tasks\DocumentReviewTaskProvider;
 use Hwkdo\IntranetAppDokumente\Tasks\PendingAcknowledgmentTaskProvider;
@@ -46,7 +45,7 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesNotification
 
     public static function userSettingsClass(): ?string
     {
-        return UserSettings::class;
+        return null;
     }
 
     public static function appSettingsClass(): ?string
