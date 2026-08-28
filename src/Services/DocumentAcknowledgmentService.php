@@ -67,6 +67,10 @@ class DocumentAcknowledgmentService
             return false;
         }
 
+        if ($document->isLegacyImportAcknowledgmentExempt()) {
+            return false;
+        }
+
         return ! $this->hasAcknowledged($document->currentVersion, $userId);
     }
 

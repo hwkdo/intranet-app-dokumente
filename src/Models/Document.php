@@ -204,6 +204,23 @@ class Document extends Model
     }
 
     /**
+     * Legacy-Import-Bestand (forceable) gilt als bereits zur Kenntnis genommen.
+     * Offene Kenntnisnahme erst ab einer neueren Version (> 1).
+     */
+    public function isLegacyImportAcknowledgmentExempt(): bool
+    {
+        if ($this->legacy_id === null) {
+            return false;
+        }
+
+        $version = $this->relationLoaded('currentVersion')
+            ? $this->currentVersion
+            : $this->currentVersion()->first();
+
+        return $version !== null && (int) $version->version_number <= 1;
+    }
+
+    /**
      * @param  Builder<Document>  $query
      * @return Builder<Document>
      */
@@ -212,6 +229,12 @@ class Document extends Model
         return $query
             ->where('requires_acknowledgment', true)
             ->whereNotNull('current_version_id')
+            ->where(function (Builder $q): void {
+                $q->whereNull('legacy_id')
+                    ->orWhereHas('currentVersion', function (Builder $versionQuery): void {
+                        $versionQuery->where('version_number', '>', 1);
+                    });
+            })
             ->whereDoesntHave('currentVersion.acknowledgments', function (Builder $q) use ($userId): void {
                 $q->where('user_id', $userId);
             });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Hwkdo\IntranetAppDokumente;
 
 use Hwkdo\IntranetAppDokumente\Commands\ImportLegacyDokumenteCommand;
+use Hwkdo\IntranetAppDokumente\Commands\SeedLegacyDocumentAcknowledgmentsCommand;
 use Hwkdo\IntranetAppDokumente\Commands\SendDocumentReviewRemindersCommand;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Policies\DocumentPolicy;
@@ -24,6 +25,7 @@ class IntranetAppDokumenteServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasCommand(ImportLegacyDokumenteCommand::class)
+            ->hasCommand(SeedLegacyDocumentAcknowledgmentsCommand::class)
             ->hasCommand(SendDocumentReviewRemindersCommand::class)
             ->discoversMigrations();
     }
