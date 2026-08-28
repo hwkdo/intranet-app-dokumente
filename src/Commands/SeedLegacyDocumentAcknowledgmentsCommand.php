@@ -23,6 +23,9 @@ class SeedLegacyDocumentAcknowledgmentsCommand extends Command
             ->whereNotNull('legacy_id')
             ->where('requires_acknowledgment', true)
             ->whereNotNull('current_version_id')
+            ->whereHas('currentVersion', function ($query): void {
+                $query->where('version_number', '<=', 1);
+            })
             ->with('currentVersion')
             ->get();
 
