@@ -239,6 +239,41 @@ trait ManagesDocuments
         $this->closeDetail();
     }
 
+    public function adoptResponsibleGvp(): void
+    {
+        if (! $this->detailDocumentId) {
+            return;
+        }
+
+        $document = Document::query()->with(['gvp', 'responsible.gvp'])->findOrFail($this->detailDocumentId);
+        $this->authorize('update', $document);
+
+        if (! $document->hasInvalidStoredGvp()) {
+            Flux::toast(heading: 'Keine Änderung', text: 'Die gespeicherte GVP ist gültig.', variant: 'warning');
+
+            return;
+        }
+
+        $fallback = $document->responsibleFallbackGvp();
+        if ($fallback === null) {
+            Flux::toast(
+                heading: 'Nicht möglich',
+                text: 'Der Verantwortliche hat keine gültige GVP.',
+                variant: 'danger',
+            );
+
+            return;
+        }
+
+        $document->update(['gvp_id' => $fallback->id]);
+
+        Flux::toast(
+            heading: 'GVP aktualisiert',
+            text: 'Gespeicherte GVP wurde auf „'.$fallback->name.'“ gesetzt.',
+            variant: 'success',
+        );
+    }
+
     public function getDetailDocumentProperty(): ?Document
     {
         if (! $this->detailDocumentId) {
@@ -251,7 +286,7 @@ trait ManagesDocuments
                 'category',
                 'gvp',
                 'uploader',
-                'responsible',
+                'responsible.gvp',
                 'currentVersion.media',
                 'versions.uploader',
                 'versions.media',
