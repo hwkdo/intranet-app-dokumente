@@ -33,7 +33,13 @@
 
                     <div class="grid gap-3 md:grid-cols-2">
                         <flux:text><strong>Kategorie:</strong> {{ $document->category?->name }}</flux:text>
-                        <flux:text><strong>GVP:</strong> {{ $document->gvp?->name ?? '—' }}</flux:text>
+                        <flux:text>
+                            <strong>GVP:</strong>
+                            {{ $document->effectiveGvp()?->name ?? '—' }}
+                            @if($document->hasInvalidStoredGvp())
+                                <span class="text-amber-700 dark:text-amber-400">(Fallback)</span>
+                            @endif
+                        </flux:text>
                         <flux:text><strong>Uploader:</strong> {{ $document->uploader?->name ?? '—' }}</flux:text>
                         <flux:text><strong>Verantwortlich:</strong> {{ $document->responsible?->name ?? '—' }}</flux:text>
                         <flux:text><strong>Gültig bis:</strong> {{ $document->gueltig_bis?->format('d.m.Y') ?? 'ohne Frist' }}</flux:text>
@@ -47,6 +53,38 @@
                             </flux:text>
                         @endif
                     </div>
+
+                    @can('update', $document)
+                        @if($document->hasInvalidStoredGvp())
+                            @php
+                                $storedGvpLabel = $document->gvp
+                                    ? ($document->gvp->name.' (ID '.$document->gvp_id.')')
+                                    : ('ID '.$document->gvp_id.' – Datensatz fehlt');
+                                $fallbackGvp = $document->responsibleFallbackGvp();
+                            @endphp
+                            <flux:callout variant="warning" icon="exclamation-triangle">
+                                <flux:callout.heading>Gespeicherte GVP nicht mehr gültig</flux:callout.heading>
+                                <flux:callout.text>
+                                    Die gespeicherte GVP „{{ $storedGvpLabel }}“ ist nicht mehr gültig.
+                                    @if($fallbackGvp)
+                                        Für die Anzeige wird die GVP des Verantwortlichen verwendet: {{ $fallbackGvp->name }}.
+                                    @else
+                                        Der Verantwortliche hat derzeit keine gültige GVP – bitte Verantwortlichen bzw. User-Sync prüfen.
+                                    @endif
+                                </flux:callout.text>
+                                @if($fallbackGvp)
+                                    <div class="mt-3">
+                                        <flux:button
+                                            size="sm"
+                                            variant="primary"
+                                            wire:click="adoptResponsibleGvp"
+                                            wire:confirm="Gespeicherte GVP durch „{{ $fallbackGvp->name }}“ ersetzen?"
+                                        >GVP des Verantwortlichen speichern</flux:button>
+                                    </div>
+                                @endif
+                            </flux:callout>
+                        @endif
+                    @endcan
 
                     @if($document->description)
                         <flux:text>{{ $document->description }}</flux:text>

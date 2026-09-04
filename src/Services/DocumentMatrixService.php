@@ -3,6 +3,7 @@
 namespace Hwkdo\IntranetAppDokumente\Services;
 
 use App\Models\Gvp;
+use App\Models\User;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Models\DocumentCategory;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Cache;
 
 class DocumentMatrixService
 {
-    public const CACHE_KEY_COUNT_MATRIX = 'intranet_app_dokumente.count_matrix.v2';
+    public const CACHE_KEY_COUNT_MATRIX = 'intranet_app_dokumente.count_matrix.v4';
 
     public static function clearCountMatrixCache(): void
     {
@@ -46,12 +47,14 @@ class DocumentMatrixService
             ];
         }
 
-        $stabs = Gvp::where('kuerzel', 'Stab')
+        $stabs = Gvp::query()
+            ->where('kuerzel', 'Stab')
             ->where('parent_id', $hgf->id)
             ->orderBy('nummer')
             ->get();
 
-        $gbs = Gvp::where('kuerzel', 'GB')
+        $gbs = Gvp::query()
+            ->where('kuerzel', 'GB')
             ->where('parent_id', $hgf->id)
             ->with(['childGvps' => fn ($q) => $q->orderBy('nummer')])
             ->orderBy('nummer')
@@ -76,7 +79,8 @@ class DocumentMatrixService
             return [];
         }
 
-        return Gvp::where('kuerzel', 'Stab')
+        return Gvp::query()
+            ->where('kuerzel', 'Stab')
             ->where('parent_id', $hgf->id)
             ->pluck('id')
             ->all();
@@ -95,8 +99,49 @@ class DocumentMatrixService
             return collect();
         }
 
+        $gvpIds = array_values(array_unique(array_map('intval', $gvpIds)));
+        $gvpsById = Gvp::query()->get()->keyBy('id');
+        $resolver = app(DocumentGvpResolver::class);
+
+        $validTargetIds = collect($gvpIds)
+            ->filter(fn (int $id): bool => ! $resolver->isStoredGvpInvalidInMap($id, $gvpsById))
+            ->values()
+            ->all();
+
+        $invalidStoredIds = $gvpsById
+            ->keys()
+            ->map(fn ($id): int => (int) $id)
+            ->filter(fn (int $id): bool => $resolver->isStoredGvpInvalidInMap($id, $gvpsById))
+            ->values()
+            ->all();
+
         $query = $this->gueltigeDocumentsQuery()
-            ->whereIn('gvp_id', $gvpIds);
+            ->where(function ($q) use ($validTargetIds, $invalidStoredIds): void {
+                if ($validTargetIds !== []) {
+                    $q->whereIn('gvp_id', $validTargetIds);
+                } else {
+                    $q->whereRaw('0 = 1');
+                }
+
+                $q->orWhere(function ($fallback) use ($invalidStoredIds, $validTargetIds): void {
+                    $fallback
+                        ->where(function ($invalid) use ($invalidStoredIds): void {
+                            $invalid->whereNotNull('gvp_id')->whereDoesntHave('gvp');
+                            if ($invalidStoredIds !== []) {
+                                $invalid->orWhereIn('gvp_id', $invalidStoredIds);
+                            }
+                        });
+
+                    if ($validTargetIds !== []) {
+                        $fallback->whereHas(
+                            'responsible',
+                            fn ($user) => $user->whereIn('gvp_id', $validTargetIds)
+                        );
+                    } else {
+                        $fallback->whereRaw('0 = 1');
+                    }
+                });
+            });
 
         if ($categoryId !== null) {
             $query->where('category_id', $categoryId);
@@ -250,8 +295,7 @@ class DocumentMatrixService
         $gbs = $structure['gbs'];
 
         $rows = $this->gueltigeDocumentsQuery()
-            ->select('gvp_id', 'category_id')
-            ->get();
+            ->get(['id', 'gvp_id', 'category_id', 'responsible_id']);
 
         $hgfId = $hgf ? (int) $hgf->id : 0;
         $stabIds = $this->getStabGvpIds();
@@ -269,11 +313,13 @@ class DocumentMatrixService
             'all' => 0,
         ];
 
-        $gvpsById = Gvp::all()->keyBy('id');
+        $gvpsById = Gvp::query()->get()->keyBy('id');
+        $responsibleGvpByUserId = User::query()
+            ->whereIn('id', $rows->pluck('responsible_id')->filter()->unique())
+            ->pluck('gvp_id', 'id');
+
+        $resolver = app(DocumentGvpResolver::class);
         $locationByGvpId = [];
-        foreach ($rows->pluck('gvp_id')->unique() as $gid) {
-            $locationByGvpId[(int) $gid] = $this->getMatrixLocationForGvp((int) $gid, $hgfId, $gvpsById);
-        }
 
         $addCount = function (array &$cell, int $categoryId): void {
             $cell['all'] = ($cell['all'] ?? 0) + 1;
@@ -281,21 +327,30 @@ class DocumentMatrixService
         };
 
         foreach ($rows as $row) {
-            $gvpId = (int) $row->gvp_id;
             $catId = (int) $row->category_id;
+            $gvpId = $resolver->effectiveGvpIdFromMaps(
+                $row->gvp_id !== null ? (int) $row->gvp_id : null,
+                $row->responsible_id !== null ? (int) $row->responsible_id : null,
+                $gvpsById,
+                $responsibleGvpByUserId,
+            );
 
             $matrix['all']++;
             $matrix['category'][$catId] = ($matrix['category'][$catId] ?? 0) + 1;
 
-            if ($hgfId === 0) {
+            if ($hgfId === 0 || $gvpId === null) {
                 continue;
             }
 
-            // HGF-Zeile: nur Dokumente mit Verantwortlichem direkt an der HGF-GVP
+            // HGF-Zeile: nur Dokumente mit effektiver GVP = HGF
             if ($gvpId === $hgfId) {
                 $addCount($matrix['hgf'], $catId);
 
                 continue;
+            }
+
+            if (! array_key_exists($gvpId, $locationByGvpId)) {
+                $locationByGvpId[$gvpId] = $this->getMatrixLocationForGvp($gvpId, $hgfId, $gvpsById);
             }
 
             $loc = $locationByGvpId[$gvpId] ?? null;

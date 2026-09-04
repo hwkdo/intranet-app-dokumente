@@ -7,6 +7,7 @@ namespace Hwkdo\IntranetAppDokumente\Models;
 use App\Models\Gvp;
 use App\Models\User;
 use Hwkdo\IntranetAppDokumente\Database\Factories\DocumentFactory;
+use Hwkdo\IntranetAppDokumente\Services\DocumentGvpResolver;
 use Hwkdo\IntranetAppDokumente\Services\DocumentMatrixService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -70,6 +71,26 @@ class Document extends Model
     public function gvp(): BelongsTo
     {
         return $this->belongsTo(Gvp::class, 'gvp_id');
+    }
+
+    public function hasInvalidStoredGvp(): bool
+    {
+        return app(DocumentGvpResolver::class)->hasInvalidStoredGvp($this);
+    }
+
+    public function effectiveGvpId(): ?int
+    {
+        return app(DocumentGvpResolver::class)->effectiveGvpId($this);
+    }
+
+    public function effectiveGvp(): ?Gvp
+    {
+        return app(DocumentGvpResolver::class)->effectiveGvp($this);
+    }
+
+    public function responsibleFallbackGvp(): ?Gvp
+    {
+        return app(DocumentGvpResolver::class)->responsibleFallbackGvp($this);
     }
 
     public function category(): BelongsTo
