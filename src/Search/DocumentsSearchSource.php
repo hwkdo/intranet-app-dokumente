@@ -56,9 +56,34 @@ class DocumentsSearchSource implements SearchSourceInterface
                 appIdentifier: $this->appIdentifier(),
                 appName: $this->appName(),
                 icon: $this->icon(),
+                favoriteKey: $this->key().':'.$document->id,
                 subtitle: $document->category?->name,
                 sourceKey: $this->key(),
             ))
             ->values();
+    }
+
+    public function resolveFavorite(string $entityId, Authenticatable $user): ?SearchResult
+    {
+        if (! $this->isAvailableFor($user)) {
+            return null;
+        }
+
+        $document = Document::query()->with('category')->find($entityId);
+
+        if ($document === null) {
+            return null;
+        }
+
+        return new SearchResult(
+            title: $document->title,
+            url: route('apps.dokumente.show', $document),
+            appIdentifier: $this->appIdentifier(),
+            appName: $this->appName(),
+            icon: $this->icon(),
+            favoriteKey: $this->key().':'.$document->id,
+            subtitle: $document->category?->name,
+            sourceKey: $this->key(),
+        );
     }
 }
