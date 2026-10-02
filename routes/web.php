@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Hwkdo\IntranetAppDokumente\Http\Controllers\DownloadDocumentController;
+use Hwkdo\IntranetAppDokumente\Http\Controllers\InlineDocumentController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -26,6 +27,10 @@ Route::middleware(['web', 'auth', 'can:see-app-dokumente'])->group(function (): 
         ->whereNumber('document')
         ->whereNumber('version')
         ->name('apps.dokumente.download.version');
+
+    Route::get('apps/dokumente/inline/{document}', InlineDocumentController::class)
+        ->whereNumber('document')
+        ->name('apps.dokumente.inline');
 
 
     Route::livewire('apps/dokumente/{document}/review', 'intranet-app-dokumente::apps.dokumente.review')

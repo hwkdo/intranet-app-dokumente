@@ -100,6 +100,19 @@
                         variant="primary"
                         wire:click="markDetailDownloaded"
                     >Download</flux:button>
+                    <flux:button
+                        :href="route('apps.dokumente.inline', $document)"
+                        icon="arrow-top-right-on-square"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        tooltip="Öffnet immer die aktuelle Version im Browser"
+                    >Im Browser öffnen</flux:button>
+                    <flux:button
+                        icon="link"
+                        variant="filled"
+                        tooltip="Link zur aktuellen Version kopieren"
+                        x-on:click="navigator.clipboard.writeText({{ \Illuminate\Support\Js::from(route('apps.dokumente.inline', $document)) }}).then(() => $flux.toast({ text: 'Link kopiert', variant: 'success' })).catch(() => $flux.toast({ text: 'Kopieren fehlgeschlagen', variant: 'danger' }))"
+                    >Link kopieren</flux:button>
                 @endif
 
                 @if($document->requires_acknowledgment && auth()->user()?->can('viewAcknowledgmentReport', $document))
