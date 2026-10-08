@@ -9,6 +9,7 @@ use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Models\DocumentLightRagState;
 use Hwkdo\IntranetAppDokumente\Models\DocumentVersion;
 use Hwkdo\IntranetAppDokumente\Services\LightRagDokumenteClient;
+use Hwkdo\LlamaParseLaravel\LlamaParse;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -21,14 +22,14 @@ class SyncDocumentToLightRag implements ShouldQueue
 
     public int $tries = 5;
 
-    public int $timeout = 180;
+    public int $timeout = 600;
 
     public function __construct(
         public int $documentId,
         public ?string $replaceDocId = null,
     ) {}
 
-    public function handle(LightRagDokumenteClient $client): void
+    public function handle(LightRagDokumenteClient $client, LlamaParse $llamaParse): void
     {
         if (app()->runningUnitTests() && ! config('intranet-app-dokumente.lightrag.execute_in_tests')) {
             return;
@@ -70,13 +71,14 @@ class SyncDocumentToLightRag implements ShouldQueue
             }
 
             $extension = $media->extension !== '' ? '.'.$media->extension : '';
-            $trackId = $client->uploadFile(
-                $path,
-                'dokument-'.$document->id.'-v'.$version->version_number.$extension,
-            )['track_id'];
+            $fileName = 'dokument-'.$document->id.'-v'.$version->version_number.$extension;
+            $parsed = $this->insertParsed($client, $llamaParse, $path, $fileName, $document->id, $version->id);
+            if ($parsed['track_id'] === '') {
+                return;
+            }
 
             $state->update([
-                'track_id' => $trackId,
+                'track_id' => $parsed['track_id'],
                 'status' => DocumentLightRagStatus::Processing,
                 'error_message' => null,
             ]);
@@ -90,6 +92,39 @@ class SyncDocumentToLightRag implements ShouldQueue
             report($exception);
             $this->markFailed($document->id, $version->id, $exception->getMessage());
         }
+    }
+
+    /**
+     * @return array{track_id: string}
+     */
+    private function insertParsed(
+        LightRagDokumenteClient $client,
+        LlamaParse $llamaParse,
+        string $path,
+        string $fileName,
+        int $documentId,
+        int $versionId,
+    ): array {
+        if (! $llamaParse->configured()) {
+            $this->markFailed($documentId, $versionId, 'LlamaParse ist nicht konfiguriert. LLAMA_CLOUD_API_KEY fehlt.');
+
+            return ['track_id' => ''];
+        }
+
+        $contents = file_get_contents($path);
+        $markdown = $llamaParse->parse(is_string($contents) ? $contents : '', $fileName);
+
+        return $client->insertText(
+            '# '.$fileName."\n\n".$markdown,
+            $this->markdownName($fileName),
+        );
+    }
+
+    private function markdownName(string $fileName): string
+    {
+        $base = pathinfo($fileName, PATHINFO_FILENAME);
+
+        return ($base !== '' ? $base : 'dokument').'.md';
     }
 
     private function readablePath(Media $media): ?string

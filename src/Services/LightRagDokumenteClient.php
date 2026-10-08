@@ -5,12 +5,37 @@ declare(strict_types=1);
 namespace Hwkdo\IntranetAppDokumente\Services;
 
 use Hwkdo\IntranetAppDokumente\Exceptions\LightRagDocumentException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 class LightRagDokumenteClient
 {
+    /**
+     * @return array{track_id: string}
+     */
+    public function insertText(string $text, string $fileSource): array
+    {
+        $response = $this->request()->post($this->baseUrl().'/documents/text', [
+            'text' => $text,
+            'file_source' => $fileSource,
+        ]);
+
+        if ($response->status() === 409) {
+            throw new LightRagDocumentException('LightRAG enthält die Datei bereits.');
+        }
+
+        $response->throw();
+
+        $trackId = $response->json('track_id');
+        if (! is_string($trackId) || $trackId === '') {
+            throw new LightRagDocumentException('LightRAG hat keine track_id geliefert.');
+        }
+
+        return ['track_id' => $trackId];
+    }
+
     /**
      * @return array{track_id: string}
      */
@@ -83,7 +108,7 @@ class LightRagDokumenteClient
         ];
     }
 
-    private function request(): \Illuminate\Http\Client\PendingRequest
+    private function request(): PendingRequest
     {
         $apiKey = trim((string) config('intranet-app-dokumente.lightrag.api_key'));
         if ($apiKey === '' || $this->baseUrl() === '') {
