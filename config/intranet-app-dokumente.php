@@ -15,6 +15,12 @@ return [
 
     'user_model' => env('INTRANET_APP_DOKUMENTE_USER_MODEL', User::class),
 
+    'lightrag' => [
+        'url' => env('LIGHTRAG_DOKUMENTE_URL', 'https://lightrag-dokumente.swarm.hwkdo.com'),
+        'api_key' => env('LIGHTRAG_API_KEY'),
+        'execute_in_tests' => false,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | News-Rahmenbild (Dokument-Thumb wird in die Lücke gesetzt)

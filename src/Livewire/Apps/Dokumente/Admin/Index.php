@@ -25,7 +25,7 @@ class Index extends Component
         $this->authorize('manage-app-dokumente');
 
         $tab = request()->query('tab');
-        $allowed = ['dokumente', 'news-rahmen', 'hintergrundbild', 'einstellungen', 'kategorien', 'statistiken'];
+        $allowed = ['dokumente', 'lightrag', 'news-rahmen', 'hintergrundbild', 'einstellungen', 'kategorien', 'statistiken'];
 
         if (is_string($tab) && in_array($tab, $allowed, true)) {
             $this->activeTab = $tab;

@@ -4,6 +4,7 @@
         <flux:card class="glass-card p-2! sm:p-3!">
             <flux:tabs wire:model.live="activeTab">
                 <flux:tab name="dokumente" icon="document-text">Dokumente</flux:tab>
+                <flux:tab name="lightrag" icon="circle-stack">LightRAG</flux:tab>
                 <flux:tab name="news-rahmen" icon="newspaper">News-Rahmen</flux:tab>
                 <flux:tab name="hintergrundbild" icon="photo">Hintergrundbild</flux:tab>
                 <flux:tab name="einstellungen" icon="cog-6-tooth">Einstellungen</flux:tab>
@@ -16,6 +17,14 @@
             @if($activeTab === 'dokumente')
                 <div class="min-h-[400px]">
                     @livewire('intranet-app-dokumente::apps.dokumente.admin.documents', key('dokumente-admin-documents'))
+                </div>
+            @endif
+        </flux:tab.panel>
+
+        <flux:tab.panel name="lightrag">
+            @if($activeTab === 'lightrag')
+                <div class="min-h-[400px]">
+                    @livewire('intranet-app-dokumente::apps.dokumente.admin.light-rag', key('dokumente-admin-lightrag'))
                 </div>
             @endif
         </flux:tab.panel>

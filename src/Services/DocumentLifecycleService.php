@@ -8,6 +8,7 @@ use Hwkdo\IntranetAppDokumente\Enums\DocumentHistoryEvent;
 use Hwkdo\IntranetAppDokumente\Enums\DocumentNewsTitleImageMode;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Models\DocumentHistory;
+use Hwkdo\IntranetAppDokumente\Jobs\RemoveDocumentFromLightRag;
 use Hwkdo\IntranetAppDokumente\Models\DocumentVersion;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -235,7 +236,12 @@ class DocumentLifecycleService
     {
         $this->recordHistory($document, DocumentHistoryEvent::Deleted, $actorId, $document->currentVersion);
 
+        $documentId = $document->id;
         $document->delete();
+
+        DB::afterCommit(function () use ($documentId): void {
+            RemoveDocumentFromLightRag::dispatch($documentId);
+        });
     }
 
     protected function createVersion(
@@ -262,6 +268,10 @@ class DocumentLifecycleService
         }
 
         $media->toMediaCollection('document');
+
+        DB::afterCommit(function () use ($document): void {
+            app(DocumentLightRagQueue::class)->enqueue($document);
+        });
 
         return $version;
     }
