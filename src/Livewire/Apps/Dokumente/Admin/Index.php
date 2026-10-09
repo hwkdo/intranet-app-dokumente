@@ -6,10 +6,22 @@ use Flux\Flux;
 use Hwkdo\IntranetAppDokumente\Models\DocumentCategory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 class Index extends Component
 {
+    private const ALLOWED_TABS = [
+        'dokumente',
+        'lightrag',
+        'news-rahmen',
+        'hintergrundbild',
+        'einstellungen',
+        'kategorien',
+        'statistiken',
+    ];
+
+    #[Url(as: 'tab')]
     public string $activeTab = 'dokumente';
 
     public ?int $editingCategoryId = null;
@@ -23,12 +35,18 @@ class Index extends Component
     public function mount(): void
     {
         $this->authorize('manage-app-dokumente');
+        $this->normalizeActiveTab();
+    }
 
-        $tab = request()->query('tab');
-        $allowed = ['dokumente', 'lightrag', 'news-rahmen', 'hintergrundbild', 'einstellungen', 'kategorien', 'statistiken'];
+    public function updatedActiveTab(): void
+    {
+        $this->normalizeActiveTab();
+    }
 
-        if (is_string($tab) && in_array($tab, $allowed, true)) {
-            $this->activeTab = $tab;
+    private function normalizeActiveTab(): void
+    {
+        if (! in_array($this->activeTab, self::ALLOWED_TABS, true)) {
+            $this->activeTab = 'dokumente';
         }
     }
 

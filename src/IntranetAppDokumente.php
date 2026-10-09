@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Hwkdo\IntranetAppDokumente;
 
 use Hwkdo\IntranetAppBase\Data\NotificationTypeDefinition;
+use Hwkdo\IntranetAppBase\Data\SearchActionDefinition;
 use Hwkdo\IntranetAppBase\Interfaces\IntranetAppInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesNotificationsInterface;
+use Hwkdo\IntranetAppBase\Interfaces\ProvidesSearchActionsInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesSearchInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesTasksInterface;
 use Hwkdo\IntranetAppBase\Interfaces\TaskProviderInterface;
@@ -16,7 +18,7 @@ use Hwkdo\IntranetAppDokumente\Tasks\DocumentReviewTaskProvider;
 use Hwkdo\IntranetAppDokumente\Tasks\PendingAcknowledgmentTaskProvider;
 use Illuminate\Support\Collection;
 
-class IntranetAppDokumente implements IntranetAppInterface, ProvidesNotificationsInterface, ProvidesSearchInterface, ProvidesTasksInterface
+class IntranetAppDokumente implements IntranetAppInterface, ProvidesNotificationsInterface, ProvidesSearchActionsInterface, ProvidesSearchInterface, ProvidesTasksInterface
 {
     public static function app_name(): string
     {
@@ -98,6 +100,31 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesNotification
     {
         return [
             DocumentsSearchSource::class,
+        ];
+    }
+
+    public static function searchActions(): array
+    {
+        return [
+            new SearchActionDefinition(
+                key: 'dokumente.lightrag',
+                title: 'LightRAG',
+                keywords: [
+                    'lightrag',
+                    'rag',
+                    'light rag',
+                    'dokumente lightrag',
+                    'dokumente rag',
+                ],
+                routeName: 'apps.dokumente.admin.index',
+                appIdentifier: self::identifier(),
+                appName: self::app_name(),
+                icon: 'circle-stack',
+                permission: 'manage-app-dokumente',
+                subtitle: self::app_name(),
+                sort: 100,
+                queryParameters: ['tab' => 'lightrag'],
+            ),
         ];
     }
 }
