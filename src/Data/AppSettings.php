@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Hwkdo\IntranetAppDokumente\Data;
 
+use Hwkdo\IntranetAppBase\Contracts\HasDocumentParseSettings;
 use Hwkdo\IntranetAppBase\Data\Attributes\Description;
 use Hwkdo\IntranetAppBase\Data\BaseAppSettings;
+use Hwkdo\IntranetAppBase\Enums\DocumentParseEngine;
+use Hwkdo\IntranetAppBase\Traits\HasDocumentParseSettingsFields;
 
-class AppSettings extends BaseAppSettings
+class AppSettings extends BaseAppSettings implements HasDocumentParseSettings
 {
+    use HasDocumentParseSettingsFields;
+
     public function __construct(
         #[Description('Warnung X Tage vor Ablauf der Gültigkeit bzw. vor der Jahresprüfung')]
         public int $validityWarningDays = 30,
@@ -33,5 +38,11 @@ class AppSettings extends BaseAppSettings
 
         #[Description('Permission für manuelle GVP-Auswahl beim Upload (leer = Config-Default)')]
         public ?string $permissionChooseGvp = null,
+
+        #[Description('Document-Parsing-Motor überschreiben (leer = Intranet-Base-Default)')]
+        public ?DocumentParseEngine $documentParseEngineOverride = null,
+
+        #[Description('LlamaParse-Tier überschreiben (leer = Intranet-Base-Default)')]
+        public ?string $documentParseTierOverride = null,
     ) {}
 }

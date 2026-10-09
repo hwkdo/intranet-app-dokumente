@@ -47,6 +47,12 @@
             <div class="min-h-[400px] space-y-4">
                 @livewire('intranet-app-dokumente::apps.dokumente.admin.berechtigungen', key('dokumente-admin-berechtigungen'))
 
+                @livewire('intranet-app-base::document-parse-settings', [
+                    'appIdentifier' => 'dokumente',
+                    'settingsModelClass' => \Hwkdo\IntranetAppDokumente\Models\IntranetAppDokumenteSettings::class,
+                    'appSettingsClass' => \Hwkdo\IntranetAppDokumente\Data\AppSettings::class,
+                ])
+
                 @livewire('intranet-app-base::admin-settings', [
                     'appIdentifier' => 'dokumente',
                     'settingsModelClass' => \Hwkdo\IntranetAppDokumente\Models\IntranetAppDokumenteSettings::class,
@@ -59,6 +65,8 @@
                         'permissionUpload',
                         'permissionKenntnisnahme',
                         'permissionChooseGvp',
+                        'documentParseEngineOverride',
+                        'documentParseTierOverride',
                     ],
                 ])
             </div>

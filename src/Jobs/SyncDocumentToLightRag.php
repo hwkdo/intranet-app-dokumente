@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Hwkdo\IntranetAppDokumente\Jobs;
 
+use Hwkdo\IntranetAppBase\Contracts\IntranetAiGatewayInterface;
 use Hwkdo\IntranetAppDokumente\Enums\DocumentLightRagStatus;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Models\DocumentLightRagState;
 use Hwkdo\IntranetAppDokumente\Models\DocumentVersion;
 use Hwkdo\IntranetAppDokumente\Services\LightRagDokumenteClient;
-use Hwkdo\LlamaParseLaravel\LlamaParse;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +29,7 @@ class SyncDocumentToLightRag implements ShouldQueue
         public ?string $replaceDocId = null,
     ) {}
 
-    public function handle(LightRagDokumenteClient $client, LlamaParse $llamaParse): void
+    public function handle(LightRagDokumenteClient $client, IntranetAiGatewayInterface $gateway): void
     {
         if (app()->runningUnitTests() && ! config('intranet-app-dokumente.lightrag.execute_in_tests')) {
             return;
@@ -72,7 +72,7 @@ class SyncDocumentToLightRag implements ShouldQueue
 
             $extension = $media->extension !== '' ? '.'.$media->extension : '';
             $fileName = 'dokument-'.$document->id.'-v'.$version->version_number.$extension;
-            $parsed = $this->insertParsed($client, $llamaParse, $path, $fileName, $document->id, $version->id);
+            $parsed = $this->insertParsed($client, $gateway, $path, $fileName);
             if ($parsed['track_id'] === '') {
                 return;
             }
@@ -99,20 +99,11 @@ class SyncDocumentToLightRag implements ShouldQueue
      */
     private function insertParsed(
         LightRagDokumenteClient $client,
-        LlamaParse $llamaParse,
+        IntranetAiGatewayInterface $gateway,
         string $path,
         string $fileName,
-        int $documentId,
-        int $versionId,
     ): array {
-        if (! $llamaParse->configured()) {
-            $this->markFailed($documentId, $versionId, 'LlamaParse ist nicht konfiguriert. LLAMA_CLOUD_API_KEY fehlt.');
-
-            return ['track_id' => ''];
-        }
-
-        $contents = file_get_contents($path);
-        $markdown = $llamaParse->parse(is_string($contents) ? $contents : '', $fileName);
+        $markdown = $gateway->parseAppDocument($path, 'dokumente');
 
         return $client->insertText(
             '# '.$fileName."\n\n".$markdown,

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Hwkdo\IntranetAppDokumente\Services;
 
 use Hwkdo\IntranetAppDokumente\Exceptions\LightRagDocumentException;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -108,7 +107,7 @@ class LightRagDokumenteClient
         ];
     }
 
-    private function request(): PendingRequest
+    private function request(): \Illuminate\Http\Client\PendingRequest
     {
         $apiKey = trim((string) config('intranet-app-dokumente.lightrag.api_key'));
         if ($apiKey === '' || $this->baseUrl() === '') {
