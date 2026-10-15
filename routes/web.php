@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-use Livewire\Volt\Volt;
-
 use Hwkdo\IntranetAppDokumente\Http\Controllers\DownloadDocumentController;
 use Hwkdo\IntranetAppDokumente\Http\Controllers\InlineDocumentController;
 use Illuminate\Support\Facades\Route;
-
 
 Route::middleware(['web', 'auth', 'can:see-app-dokumente'])->group(function (): void {
     Route::livewire('apps/dokumente', 'intranet-app-dokumente::apps.dokumente.index')->name('apps.dokumente.index');
@@ -19,7 +16,6 @@ Route::middleware(['web', 'auth', 'can:see-app-dokumente'])->group(function (): 
         ->name('apps.dokumente.settings.notifications');
 
     Route::livewire('apps/dokumente/suche', 'intranet-app-dokumente::apps.dokumente.search')->name('apps.dokumente.search');
-
 
     Route::get('apps/dokumente/download/{document}', DownloadDocumentController::class)
         ->whereNumber('document')
@@ -33,7 +29,6 @@ Route::middleware(['web', 'auth', 'can:see-app-dokumente'])->group(function (): 
     Route::get('apps/dokumente/inline/{document}', InlineDocumentController::class)
         ->whereNumber('document')
         ->name('apps.dokumente.inline');
-
 
     Route::livewire('apps/dokumente/{document}/review', 'intranet-app-dokumente::apps.dokumente.review')
         ->whereNumber('document')
@@ -49,16 +44,10 @@ Route::middleware(['web', 'auth', 'can:see-app-dokumente'])->group(function (): 
         ->name('apps.dokumente.show');
 });
 
-
 Route::middleware(['web', 'auth', 'can:manage-app-dokumente'])->group(function (): void {
     Route::livewire('apps/dokumente/admin', 'intranet-app-dokumente::apps.dokumente.admin.index')->name('apps.dokumente.admin.index');
 
     Route::get('apps/dokumente/admin/documents', function () {
         return redirect()->route('apps.dokumente.admin.index', ['tab' => 'dokumente']);
     })->name('apps.dokumente.admin.documents');
-});
-
-Route::middleware(['web', 'auth', 'can:manage-app-dokumente'])->group(function (): void {
-    Volt::route('apps/dokumente/admin/background-activities', 'apps.dokumente.admin.background-activities')
-        ->name('apps.dokumente.admin.background-activities');
 });

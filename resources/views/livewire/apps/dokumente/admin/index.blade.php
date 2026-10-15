@@ -1,3 +1,5 @@
+
+<div>
 <x-intranet-app-dokumente::dokumente-layout heading="Dokumente App" subheading="Admin">
 <div>
     <flux:tab.group class="space-y-4">
@@ -10,6 +12,7 @@
                 <flux:tab name="einstellungen" icon="cog-6-tooth">Einstellungen</flux:tab>
                 <flux:tab name="kategorien" icon="folder">Kategorien</flux:tab>
                 <flux:tab name="statistiken" icon="chart-bar">Statistiken</flux:tab>
+                <flux:tab name="hintergrund" icon="clock">Hintergrund</flux:tab>
             </flux:tabs>
         </flux:card>
 
@@ -139,6 +142,14 @@
                 </div>
             </flux:card>
         </flux:tab.panel>
+    <flux:tab.panel name="hintergrund">
+        @if ($activeTab === 'hintergrund')
+            <div class="min-h-[400px]">
+                @livewire('intranet-app-base::background-activities', ['appIdentifier' => 'dokumente'], key('dokumente-admin-hintergrund'))
+            </div>
+        @endif
+    </flux:tab.panel>
     </flux:tab.group>
 </div>
 </x-intranet-app-dokumente::dokumente-layout>
+</div>

@@ -1,3 +1,5 @@
+
+<div>
 <x-intranet-app-dokumente::dokumente-layout heading="Beispiel-Seite" subheading="Demonstration der Dokumente-Funktionalität">
 <div>
     <flux:card class="glass-card">
@@ -30,3 +32,4 @@
     </flux:card>
 </div>
 </x-intranet-app-dokumente::dokumente-layout>
+</div>

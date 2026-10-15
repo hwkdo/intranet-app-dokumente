@@ -19,6 +19,7 @@ class Index extends Component
         'einstellungen',
         'kategorien',
         'statistiken',
+        'hintergrund',
     ];
 
     #[Url(as: 'tab')]

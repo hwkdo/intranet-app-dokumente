@@ -1,3 +1,5 @@
+
+<div>
 <x-intranet-app-dokumente::dokumente-layout heading="Dokumente App" subheading="Übersicht">
 <div>
     @php
@@ -422,3 +424,4 @@
     @endif
 </div>
 </x-intranet-app-dokumente::dokumente-layout>
+</div>

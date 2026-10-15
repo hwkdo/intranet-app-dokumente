@@ -11,7 +11,6 @@
         ['label' => 'Suche', 'href' => route('apps.dokumente.search'), 'icon' => 'magnifying-glass', 'description' => 'Dokumente durchsuchen', 'buttonText' => 'Suche öffnen'],
         ['label' => 'Benachrichtigungen', 'href' => route('apps.dokumente.settings.notifications'), 'icon' => 'bell', 'description' => 'Benachrichtigungen dieser App konfigurieren', 'buttonText' => 'Benachrichtigungen öffnen'],
         ['label' => 'App-Info', 'href' => route('apps.dokumente.info'), 'icon' => 'information-circle', 'description' => 'Installierte Version und Release-Historie', 'buttonText' => 'App-Info anzeigen'],
-        ['label' => 'Hintergrund', 'href' => route('apps.dokumente.admin.background-activities'), 'icon' => 'clock', 'description' => 'Geplante Tasks, Jobs und Versand', 'buttonText' => 'Hintergrund öffnen', 'permission' => 'manage-app-dokumente'],
         ['label' => 'Admin', 'href' => route('apps.dokumente.admin.index'), 'icon' => 'shield-check', 'description' => 'Administrationsbereich verwalten', 'buttonText' => 'Admin öffnen', 'permission' => 'manage-app-dokumente'],
     ];
     
