@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Hwkdo\IntranetAppDokumente;
 
+use Hwkdo\IntranetAppBase\Interfaces\ProvidesBackgroundActivitiesInterface;
+use Hwkdo\IntranetAppDokumente\Background\DokumenteBackgroundActivities;
 use Hwkdo\IntranetAppBase\Data\NotificationTypeDefinition;
 use Hwkdo\IntranetAppBase\Data\SearchActionDefinition;
 use Hwkdo\IntranetAppBase\Interfaces\IntranetAppInterface;
@@ -18,7 +20,7 @@ use Hwkdo\IntranetAppDokumente\Tasks\DocumentReviewTaskProvider;
 use Hwkdo\IntranetAppDokumente\Tasks\PendingAcknowledgmentTaskProvider;
 use Illuminate\Support\Collection;
 
-class IntranetAppDokumente implements IntranetAppInterface, ProvidesNotificationsInterface, ProvidesSearchActionsInterface, ProvidesSearchInterface, ProvidesTasksInterface
+class IntranetAppDokumente implements IntranetAppInterface, ProvidesBackgroundActivitiesInterface, ProvidesNotificationsInterface, ProvidesSearchActionsInterface, ProvidesSearchInterface, ProvidesTasksInterface
 {
     public static function app_name(): string
     {
@@ -127,4 +129,11 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesNotification
             ),
         ];
     }
+
+    public static function backgroundActivities(): array
+    {
+        return DokumenteBackgroundActivities::definitions();
+    }
+
+
 }

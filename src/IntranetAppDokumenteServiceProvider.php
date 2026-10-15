@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Hwkdo\IntranetAppDokumente;
 
 use Hwkdo\IntranetAppDokumente\Commands\ImportLegacyDokumenteCommand;
-use Hwkdo\IntranetAppDokumente\Commands\SyncDokumenteLightRagStatusCommand;
 use Hwkdo\IntranetAppDokumente\Commands\SeedLegacyDocumentAcknowledgmentsCommand;
 use Hwkdo\IntranetAppDokumente\Commands\SendDocumentReviewRemindersCommand;
+use Hwkdo\IntranetAppDokumente\Commands\SyncDokumenteLightRagStatusCommand;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Policies\DocumentPolicy;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
+use Livewire\Volt\Volt;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -36,6 +36,10 @@ class IntranetAppDokumenteServiceProvider extends PackageServiceProvider
     {
         parent::boot();
 
+        $this->app->booted(function (): void {
+            Volt::mount(__DIR__.'/../resources/views/livewire');
+        });
+
         Gate::policy(Document::class, DocumentPolicy::class);
 
         Livewire::addNamespace(
@@ -46,10 +50,6 @@ class IntranetAppDokumenteServiceProvider extends PackageServiceProvider
 
         $this->app->booted(function (): void {
             $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
-        });
-
-        $this->app->resolving(Schedule::class, function (): void {
-            require __DIR__.'/../routes/console.php';
         });
 
         $this->configureTypesenseIndexSettings();

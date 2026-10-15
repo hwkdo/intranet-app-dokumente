@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Livewire\Volt\Volt;
+
 use Hwkdo\IntranetAppDokumente\Http\Controllers\DownloadDocumentController;
 use Hwkdo\IntranetAppDokumente\Http\Controllers\InlineDocumentController;
 use Illuminate\Support\Facades\Route;
@@ -54,4 +56,9 @@ Route::middleware(['web', 'auth', 'can:manage-app-dokumente'])->group(function (
     Route::get('apps/dokumente/admin/documents', function () {
         return redirect()->route('apps.dokumente.admin.index', ['tab' => 'dokumente']);
     })->name('apps.dokumente.admin.documents');
+});
+
+Route::middleware(['web', 'auth', 'can:manage-app-dokumente'])->group(function (): void {
+    Volt::route('apps/dokumente/admin/background-activities', 'apps.dokumente.admin.background-activities')
+        ->name('apps.dokumente.admin.background-activities');
 });
