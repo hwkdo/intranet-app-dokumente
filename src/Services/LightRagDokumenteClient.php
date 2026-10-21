@@ -71,7 +71,7 @@ class LightRagDokumenteClient
 
     public function deleteDocument(string $docId): void
     {
-        $response = $this->request()->post($this->baseUrl().'/documents/delete_document', [
+        $response = $this->request()->delete($this->baseUrl().'/documents/delete_document', [
             'doc_ids' => [$docId],
             'delete_file' => true,
             'delete_llm_cache' => true,
