@@ -59,7 +59,7 @@ class DocumentAcknowledgmentReportService
 
         $acks = $this->acknowledgmentsByUserId($document, $paginator->getCollection()->pluck('id'));
 
-        return $paginator->through(fn ($user) => $this->mapUser($user, $acks->get($user->id)));
+        return $paginator->through(fn ($user) => $this->mapUser($document, $user, $acks->get($user->id)));
     }
 
     /**
@@ -73,7 +73,7 @@ class DocumentAcknowledgmentReportService
         $users = $this->baseQuery($document, $status, $search)->get();
         $acks = $this->acknowledgmentsByUserId($document, $users->pluck('id'));
 
-        return $users->map(fn ($user) => $this->mapUser($user, $acks->get($user->id)));
+        return $users->map(fn ($user) => $this->mapUser($document, $user, $acks->get($user->id)));
     }
 
     /**
@@ -130,13 +130,14 @@ class DocumentAcknowledgmentReportService
         }
 
         return DocumentAcknowledgment::query()
+            ->with('media')
             ->where('document_version_id', $version->id)
             ->whereIn('user_id', $userIds)
             ->get()
             ->keyBy('user_id');
     }
 
-    protected function mapUser(object $user, ?DocumentAcknowledgment $acknowledgment): object
+    protected function mapUser(Document $document, object $user, ?DocumentAcknowledgment $acknowledgment): object
     {
         $acknowledgedAt = $acknowledgment?->acknowledged_at;
 
@@ -149,7 +150,28 @@ class DocumentAcknowledgmentReportService
             'acknowledged_at' => $acknowledgedAt,
             'confirmation_method' => $acknowledgment?->confirmation_method,
             'status_label' => $acknowledgment !== null ? 'Erfolgt' : 'Nicht erfolgt',
+            'signed_pdf_url' => $this->signedPdfUrl($document, $acknowledgment),
         ];
+    }
+
+    protected function signedPdfUrl(Document $document, ?DocumentAcknowledgment $acknowledgment): ?string
+    {
+        if ($acknowledgment === null) {
+            return null;
+        }
+
+        if ($acknowledgment->confirmation_method !== DocumentAcknowledgmentService::METHOD_FORMWERK) {
+            return null;
+        }
+
+        if ($acknowledgment->getFirstMedia('signed_pdf') === null) {
+            return null;
+        }
+
+        return route('apps.dokumente.acknowledgments.signed-pdf', [
+            'document' => $document->id,
+            'acknowledgment' => $acknowledgment->id,
+        ]);
     }
 
     /**

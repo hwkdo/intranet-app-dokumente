@@ -83,6 +83,7 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesBackgroundAc
                 appName: self::app_name(),
                 description: 'Ein Dokument erfordert Ihre Kenntnisnahme per Passwortbestätigung.',
                 mandatory: true,
+                defaultChannels: ['inbox', 'mail'],
             ),
             new NotificationTypeDefinition(
                 key: 'dokumente.review_required',

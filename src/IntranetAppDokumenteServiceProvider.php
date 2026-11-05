@@ -10,6 +10,8 @@ use Hwkdo\IntranetAppDokumente\Commands\SendDocumentReviewRemindersCommand;
 use Hwkdo\IntranetAppDokumente\Commands\SyncDokumenteLightRagStatusCommand;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Policies\DocumentPolicy;
+use Hwkdo\IntranetAppDokumente\Services\FormwerkOnboardingDocumentLinks;
+use Hwkdo\IntranetAppWorkflows\Contracts\OnboardingSignatureDocumentSource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
@@ -41,6 +43,13 @@ class IntranetAppDokumenteServiceProvider extends PackageServiceProvider
         });
 
         Gate::policy(Document::class, DocumentPolicy::class);
+
+        if (interface_exists(OnboardingSignatureDocumentSource::class)) {
+            $this->app->singleton(
+                OnboardingSignatureDocumentSource::class,
+                FormwerkOnboardingDocumentLinks::class,
+            );
+        }
 
         Livewire::addNamespace(
             'intranet-app-dokumente',

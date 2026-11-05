@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Hwkdo\IntranetAppDokumente\Services;
 
+use Hwkdo\IntranetAppDokumente\Enums\AcknowledgmentMethod;
 use Hwkdo\IntranetAppDokumente\Enums\DocumentHistoryEvent;
 use Hwkdo\IntranetAppDokumente\Enums\DocumentNewsTitleImageMode;
+use Hwkdo\IntranetAppDokumente\Jobs\RemoveDocumentFromLightRag;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Models\DocumentHistory;
-use Hwkdo\IntranetAppDokumente\Jobs\RemoveDocumentFromLightRag;
 use Hwkdo\IntranetAppDokumente\Models\DocumentVersion;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -33,6 +34,10 @@ class DocumentLifecycleService
      *     gvp_id?: ?int,
      *     category_id: int,
      *     requires_acknowledgment?: bool,
+     *     acknowledgment_method?: AcknowledgmentMethod|string,
+     *     formwerk_form_url?: ?string,
+     *     formwerk_use_custom_payload?: bool,
+     *     formwerk_payload?: ?array<string, string>,
      *     is_onboarding_it?: bool,
      *     is_onboarding_perso?: bool,
      *     legacy_id?: ?int
@@ -59,6 +64,10 @@ class DocumentLifecycleService
                 'gvp_id' => $attributes['gvp_id'] ?? null,
                 'category_id' => $attributes['category_id'],
                 'requires_acknowledgment' => (bool) ($attributes['requires_acknowledgment'] ?? false),
+                'acknowledgment_method' => $attributes['acknowledgment_method'] ?? AcknowledgmentMethod::Password,
+                'formwerk_form_url' => $attributes['formwerk_form_url'] ?? null,
+                'formwerk_use_custom_payload' => (bool) ($attributes['formwerk_use_custom_payload'] ?? false),
+                'formwerk_payload' => $attributes['formwerk_payload'] ?? null,
                 'is_onboarding_it' => (bool) ($attributes['is_onboarding_it'] ?? false),
                 'is_onboarding_perso' => (bool) ($attributes['is_onboarding_perso'] ?? false),
                 'legacy_id' => $attributes['legacy_id'] ?? null,
@@ -102,6 +111,10 @@ class DocumentLifecycleService
      *     gvp_id?: ?int,
      *     category_id?: int,
      *     requires_acknowledgment?: bool,
+     *     acknowledgment_method?: AcknowledgmentMethod|string,
+     *     formwerk_form_url?: ?string,
+     *     formwerk_use_custom_payload?: bool,
+     *     formwerk_payload?: ?array<string, string>,
      *     is_onboarding_it?: bool,
      *     is_onboarding_perso?: bool
      * }  $attributes
@@ -119,6 +132,18 @@ class DocumentLifecycleService
             'requires_acknowledgment' => array_key_exists('requires_acknowledgment', $attributes)
                 ? (bool) $attributes['requires_acknowledgment']
                 : $document->requires_acknowledgment,
+            'acknowledgment_method' => array_key_exists('acknowledgment_method', $attributes)
+                ? $attributes['acknowledgment_method']
+                : $document->acknowledgment_method,
+            'formwerk_form_url' => array_key_exists('formwerk_form_url', $attributes)
+                ? $attributes['formwerk_form_url']
+                : $document->formwerk_form_url,
+            'formwerk_use_custom_payload' => array_key_exists('formwerk_use_custom_payload', $attributes)
+                ? (bool) $attributes['formwerk_use_custom_payload']
+                : $document->formwerk_use_custom_payload,
+            'formwerk_payload' => array_key_exists('formwerk_payload', $attributes)
+                ? $attributes['formwerk_payload']
+                : $document->formwerk_payload,
             'is_onboarding_it' => array_key_exists('is_onboarding_it', $attributes)
                 ? (bool) $attributes['is_onboarding_it']
                 : $document->is_onboarding_it,
@@ -139,7 +164,44 @@ class DocumentLifecycleService
      *     responsible_id?: int,
      *     gvp_id?: ?int,
      *     category_id?: int,
-     *     requires_acknowledgment?: bool
+     *     requires_acknowledgment?: bool,
+     *     acknowledgment_method?: AcknowledgmentMethod|string,
+     *     formwerk_form_url?: ?string,
+     *     formwerk_use_custom_payload?: bool,
+     *     formwerk_payload?: ?array<string, string>,
+     *     is_onboarding_it?: bool,
+     *     is_onboarding_perso?: bool
+     * }  $attributes
+     */
+    public function editMetadata(Document $document, array $attributes, int $actorId): Document
+    {
+        $document = $this->updateMetadata($document, $attributes, $actorId);
+
+        $this->recordHistory($document, DocumentHistoryEvent::Edited, $actorId, $document->currentVersion, [
+            'fields' => array_keys($attributes),
+        ]);
+
+        DocumentMatrixService::clearCountMatrixCache();
+
+        return $document->fresh();
+    }
+
+    /**
+     * @param  array{
+     *     title?: string,
+     *     description?: ?string,
+     *     gueltig_bis?: ?string,
+     *     aktiv?: bool,
+     *     responsible_id?: int,
+     *     gvp_id?: ?int,
+     *     category_id?: int,
+     *     requires_acknowledgment?: bool,
+     *     acknowledgment_method?: AcknowledgmentMethod|string,
+     *     formwerk_form_url?: ?string,
+     *     formwerk_use_custom_payload?: bool,
+     *     formwerk_payload?: ?array<string, string>,
+     *     is_onboarding_it?: bool,
+     *     is_onboarding_perso?: bool
      * }  $attributes
      */
     public function createNewVersion(

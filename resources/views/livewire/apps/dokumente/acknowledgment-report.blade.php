@@ -44,6 +44,7 @@
                     <flux:table.column>E-Mail</flux:table.column>
                     <flux:table.column>Status</flux:table.column>
                     <flux:table.column>Kenntnisnahme am</flux:table.column>
+                    <flux:table.column>PDF</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @forelse($this->rows as $row)
@@ -65,10 +66,24 @@
                                     —
                                 @endif
                             </flux:table.cell>
+                            <flux:table.cell>
+                                @if($row->signed_pdf_url)
+                                    <flux:button
+                                        :href="$row->signed_pdf_url"
+                                        size="xs"
+                                        variant="ghost"
+                                        icon="arrow-down-tray"
+                                    >
+                                        PDF
+                                    </flux:button>
+                                @else
+                                    —
+                                @endif
+                            </flux:table.cell>
                         </flux:table.row>
                     @empty
                         <flux:table.row>
-                            <flux:table.cell colspan="5">Keine Benutzer für die aktuelle Auswahl.</flux:table.cell>
+                            <flux:table.cell colspan="6">Keine Benutzer für die aktuelle Auswahl.</flux:table.cell>
                         </flux:table.row>
                     @endforelse
                 </flux:table.rows>

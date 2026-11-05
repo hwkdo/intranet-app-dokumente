@@ -366,7 +366,8 @@
                         @endforeach
                     </flux:select>
                     @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::kenntnisnahme())
-                        <flux:switch wire:model="uploadRequiresAcknowledgment" label="Zur Kenntnisnahme" />
+                        <flux:switch wire:model.live="uploadRequiresAcknowledgment" label="Zur Kenntnisnahme" />
+                        @include('intranet-app-dokumente::partials.acknowledgment-method-fields')
                     @endcan
                     <flux:switch wire:model="uploadShowInNewsSlider" label="In News-Slider anzeigen" />
                     <flux:radio.group wire:model.live="uploadNewsTitleImageMode" label="News-Titelbild">

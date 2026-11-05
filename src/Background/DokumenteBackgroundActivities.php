@@ -8,6 +8,7 @@ use Hwkdo\IntranetAppBase\Data\BackgroundActivityDefinition;
 use Hwkdo\IntranetAppBase\Data\BackgroundActivityFrequency;
 use Hwkdo\IntranetAppBase\Enums\BackgroundActivityCadence;
 use Hwkdo\IntranetAppDokumente\IntranetAppDokumente;
+use Hwkdo\IntranetAppDokumente\Jobs\ProcessDocumentFormwerkAcknowledgment;
 use Hwkdo\IntranetAppDokumente\Jobs\RemoveDocumentFromLightRag;
 use Hwkdo\IntranetAppDokumente\Jobs\SyncDocumentLightRagTrack;
 use Hwkdo\IntranetAppDokumente\Jobs\SyncDocumentToLightRag;
@@ -52,6 +53,7 @@ final class DokumenteBackgroundActivities
             BackgroundActivityDefinition::queued(key: 'dokumente.lightrag-sync', label: 'Dokument an LightRAG', appIdentifier: $id, appName: $name, job: SyncDocumentToLightRag::class, description: 'Überträgt ein Dokument an LightRAG.', sort: 30),
             BackgroundActivityDefinition::queued(key: 'dokumente.lightrag-track', label: 'Dokument LightRAG-Track', appIdentifier: $id, appName: $name, job: SyncDocumentLightRagTrack::class, description: 'Aktualisiert den LightRAG-Track eines Dokuments.', sort: 40),
             BackgroundActivityDefinition::queued(key: 'dokumente.lightrag-remove', label: 'Dokument aus LightRAG entfernen', appIdentifier: $id, appName: $name, job: RemoveDocumentFromLightRag::class, description: 'Entfernt ein Dokument aus LightRAG.', sort: 50),
+            BackgroundActivityDefinition::queued(key: 'dokumente.formwerk-acknowledgment', label: 'Formwerk-Kenntnisnahme', appIdentifier: $id, appName: $name, job: ProcessDocumentFormwerkAcknowledgment::class, description: 'Speichert das unterschriebene PDF und setzt die Kenntnisnahme.', sort: 60),
         ];
     }
 }

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Hwkdo\IntranetAppDokumente\Http\Controllers\DownloadDocumentController;
+use Hwkdo\IntranetAppDokumente\Http\Controllers\DownloadSignedAcknowledgmentController;
+use Hwkdo\IntranetAppDokumente\Http\Controllers\FormwerkAcknowledgmentRedirectController;
 use Hwkdo\IntranetAppDokumente\Http\Controllers\InlineDocumentController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +40,15 @@ Route::middleware(['web', 'auth', 'can:see-app-dokumente'])->group(function (): 
         ->middleware('ldap.password.confirm')
         ->whereNumber('document')
         ->name('apps.dokumente.acknowledge');
+
+    Route::get('apps/dokumente/{document}/formwerk', FormwerkAcknowledgmentRedirectController::class)
+        ->whereNumber('document')
+        ->name('apps.dokumente.formwerk');
+
+    Route::get('apps/dokumente/{document}/acknowledgments/{acknowledgment}/signed-pdf', DownloadSignedAcknowledgmentController::class)
+        ->whereNumber('document')
+        ->whereNumber('acknowledgment')
+        ->name('apps.dokumente.acknowledgments.signed-pdf');
 
     Route::livewire('apps/dokumente/{document}', 'intranet-app-dokumente::apps.dokumente.show')
         ->whereNumber('document')

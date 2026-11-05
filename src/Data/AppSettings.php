@@ -44,5 +44,21 @@ class AppSettings extends BaseAppSettings implements HasDocumentParseSettings
 
         #[Description('LlamaParse-Tier überschreiben (leer = Intranet-Base-Default)')]
         public ?string $documentParseTierOverride = null,
+
+        #[Description('Standard-Formwerk-URL für Kenntnisnahme per Unterschrift')]
+        public ?string $formwerkAcknowledgmentFormUrl = null,
+
+        #[Description('Standard-JWT-Felder der Formwerk-Kenntnisnahme (JSON-Liste)')]
+        public array $formwerkAcknowledgmentPayloadFields = [
+            'username',
+            'vorname',
+            'nachname',
+            'email',
+            'gb',
+            'abteilung',
+            'standort',
+            'einstellungsdatum',
+            'tel',
+        ],
     ) {}
 }

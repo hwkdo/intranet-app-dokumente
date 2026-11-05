@@ -44,7 +44,16 @@
                         <flux:text><strong>Verantwortlich:</strong> {{ $document->responsible?->name ?? '—' }}</flux:text>
                         <flux:text><strong>Gültig bis:</strong> {{ $document->gueltig_bis?->format('d.m.Y') ?? 'ohne Frist' }}</flux:text>
                         <flux:text><strong>Aktiv:</strong> {{ $document->aktiv ? 'Ja' : 'Nein' }}</flux:text>
-                        <flux:text><strong>Kenntnisnahme:</strong> {{ $document->requires_acknowledgment ? 'Ja' : 'Nein' }}</flux:text>
+                        <flux:text>
+                            <strong>Kenntnisnahme:</strong>
+                            @if(! $document->requires_acknowledgment)
+                                Nein
+                            @elseif($document->usesFormwerkAcknowledgment())
+                                Unterschrift (Formwerk)
+                            @else
+                                Passworteingabe
+                            @endif
+                        </flux:text>
                         @if($document->is_onboarding_it || $document->is_onboarding_perso)
                             <flux:text>
                                 <strong>Onboarding:</strong>
@@ -123,7 +132,13 @@
                 @endif
 
                 @if($this->detailNeedsAcknowledgment)
-                    @if($detailDownloadClicked)
+                    @if($document->usesFormwerkAcknowledgment())
+                        <flux:button
+                            :href="route('apps.dokumente.formwerk', $document)"
+                            icon="pencil-square"
+                            variant="primary"
+                        >Per Unterschrift bestätigen</flux:button>
+                    @elseif($detailDownloadClicked)
                         <flux:button
                             :href="route('apps.dokumente.acknowledge', $document)"
                             icon="check-badge"
@@ -143,6 +158,7 @@
                 @endif
 
                 @can('update', $document)
+                    <flux:button wire:click="openEditModal({{ $document->id }})" variant="filled" icon="pencil-square">Bearbeiten</flux:button>
                     <flux:button wire:click="openUpdateModal({{ $document->id }})" variant="filled">Aktualisieren</flux:button>
                     <flux:button wire:click="openExtendModal({{ $document->id }})" variant="filled">Verlängern</flux:button>
                 @endcan
@@ -248,8 +264,30 @@
                 <flux:select.option value="{{ $id }}">{{ $label }}</flux:select.option>
             @endforeach
         </flux:select>
+        @include('intranet-app-dokumente::partials.acknowledgment-method-fields', [
+            'requiresModel' => 'updateRequiresAcknowledgment',
+            'methodModel' => 'updateAcknowledgmentMethod',
+            'urlModel' => 'updateFormwerkFormUrl',
+            'customModel' => 'updateFormwerkUseCustomPayload',
+            'rowsModel' => 'updateFormwerkPayload',
+            'onboardingItModel' => 'updateIsOnboardingIt',
+            'onboardingPersoModel' => 'updateIsOnboardingPerso',
+            'target' => 'update',
+            'showAcknowledgment' => false,
+        ])
         @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::kenntnisnahme())
             <flux:switch wire:model.live="updateRequiresAcknowledgment" label="Zur Kenntnisnahme" />
+            @include('intranet-app-dokumente::partials.acknowledgment-method-fields', [
+                'requiresModel' => 'updateRequiresAcknowledgment',
+                'methodModel' => 'updateAcknowledgmentMethod',
+                'urlModel' => 'updateFormwerkFormUrl',
+                'customModel' => 'updateFormwerkUseCustomPayload',
+                'rowsModel' => 'updateFormwerkPayload',
+                'onboardingItModel' => 'updateIsOnboardingIt',
+                'onboardingPersoModel' => 'updateIsOnboardingPerso',
+                'target' => 'update',
+                'showOnboarding' => false,
+            ])
         @endcan
         @if($updateRequiresAcknowledgment)
             <flux:switch
@@ -300,6 +338,56 @@
         <div class="flex gap-2">
             <flux:button type="submit" variant="primary">Version speichern</flux:button>
             <flux:button type="button" variant="ghost" wire:click="$set('showUpdateModal', false)">Abbrechen</flux:button>
+        </div>
+    </form>
+</flux:modal>
+
+<flux:modal wire:model="showEditModal" class="max-w-2xl">
+    <form wire:submit="saveEdit" class="space-y-4">
+        <flux:heading size="lg">Dokument bearbeiten</flux:heading>
+        <flux:text>Titel, Beschreibung und Einstellungen. Die Datei bleibt die aktuelle Version.</flux:text>
+        <flux:input wire:model="updateTitle" label="Titel" required />
+        <flux:textarea wire:model="updateDescription" label="Beschreibung" rows="3" />
+        <flux:input type="date" wire:model="updateGueltigBis" label="Gültig bis" />
+        <flux:switch wire:model="updateAktiv" label="Aktiv" />
+        <flux:select wire:model="updateCategoryId" label="Kategorie">
+            @foreach($this->categoriesForSelect as $id => $name)
+                <flux:select.option value="{{ $id }}">{{ $name }}</flux:select.option>
+            @endforeach
+        </flux:select>
+        <flux:select wire:model="updateResponsibleId" variant="listbox" searchable label="Verantwortliche/r" placeholder="Verantwortliche/n suchen…">
+            @foreach($this->usersForSelect as $id => $label)
+                <flux:select.option value="{{ $id }}">{{ $label }}</flux:select.option>
+            @endforeach
+        </flux:select>
+        @include('intranet-app-dokumente::partials.acknowledgment-method-fields', [
+            'requiresModel' => 'updateRequiresAcknowledgment',
+            'methodModel' => 'updateAcknowledgmentMethod',
+            'urlModel' => 'updateFormwerkFormUrl',
+            'customModel' => 'updateFormwerkUseCustomPayload',
+            'rowsModel' => 'updateFormwerkPayload',
+            'onboardingItModel' => 'updateIsOnboardingIt',
+            'onboardingPersoModel' => 'updateIsOnboardingPerso',
+            'target' => 'update',
+            'showAcknowledgment' => false,
+        ])
+        @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::kenntnisnahme())
+            <flux:switch wire:model.live="updateRequiresAcknowledgment" label="Zur Kenntnisnahme" />
+            @include('intranet-app-dokumente::partials.acknowledgment-method-fields', [
+                'requiresModel' => 'updateRequiresAcknowledgment',
+                'methodModel' => 'updateAcknowledgmentMethod',
+                'urlModel' => 'updateFormwerkFormUrl',
+                'customModel' => 'updateFormwerkUseCustomPayload',
+                'rowsModel' => 'updateFormwerkPayload',
+                'onboardingItModel' => 'updateIsOnboardingIt',
+                'onboardingPersoModel' => 'updateIsOnboardingPerso',
+                'target' => 'update',
+                'showOnboarding' => false,
+            ])
+        @endcan
+        <div class="flex gap-2">
+            <flux:button type="submit" variant="primary">Speichern</flux:button>
+            <flux:button type="button" variant="ghost" wire:click="$set('showEditModal', false)">Abbrechen</flux:button>
         </div>
     </form>
 </flux:modal>

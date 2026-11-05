@@ -14,6 +14,8 @@ class DocumentAcknowledgmentService
 {
     public const METHOD_PASSWORD = 'password';
 
+    public const METHOD_FORMWERK = 'formwerk';
+
     public static function downloadSessionKey(int $documentId): string
     {
         return 'dokumente.downloaded_for_ack.'.$documentId;

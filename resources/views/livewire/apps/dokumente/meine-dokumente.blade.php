@@ -28,6 +28,9 @@
                                             Kenntnisnahme
                                         </flux:button>
                                     @endif
+                                    @can('update', $doc)
+                                        <flux:button size="sm" icon="pencil-square" wire:click="openEditModal({{ $doc->id }})">Bearbeiten</flux:button>
+                                    @endcan
                                     <flux:button size="sm" wire:click="openDetail({{ $doc->id }})">Öffnen</flux:button>
                                 </div>
                             </flux:table.cell>

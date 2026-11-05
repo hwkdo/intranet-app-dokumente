@@ -9,6 +9,7 @@ enum DocumentHistoryEvent: string
     case Created = 'created';
     case Extended = 'extended';
     case Updated = 'updated';
+    case Edited = 'edited';
     case Deleted = 'deleted';
     case Restored = 'restored';
 
@@ -18,6 +19,7 @@ enum DocumentHistoryEvent: string
             self::Created => 'Erstellt',
             self::Extended => 'Gültigkeit verlängert',
             self::Updated => 'Aktualisiert',
+            self::Edited => 'Bearbeitet',
             self::Deleted => 'Gelöscht',
             self::Restored => 'Wiederhergestellt',
         };

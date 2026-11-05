@@ -42,7 +42,7 @@ class DocumentAcknowledgmentExport implements FromArray, ShouldAutoSize, WithTit
             ['Filter', $this->statusFilter->label()],
             ['Suche', $this->search !== '' ? $this->search : '—'],
             [],
-            ['Nachname', 'Vorname', 'E-Mail', 'Status', 'Kenntnisnahme am', 'Methode'],
+            ['Nachname', 'Vorname', 'E-Mail', 'Status', 'Kenntnisnahme am', 'Methode', 'PDF'],
         ];
 
         foreach ($this->rows as $row) {
@@ -62,6 +62,7 @@ class DocumentAcknowledgmentExport implements FromArray, ShouldAutoSize, WithTit
                 (string) $row->status_label,
                 $acknowledgedAt,
                 (string) ($row->confirmation_method ?? '—'),
+                (string) ($row->signed_pdf_url ?? '—'),
             ];
         }
 

@@ -7,6 +7,7 @@ namespace Hwkdo\IntranetAppDokumente\Livewire\Apps\Dokumente;
 use App\Models\Gvp;
 use App\Models\User;
 use Flux\Flux;
+use Hwkdo\IntranetAppDokumente\Enums\AcknowledgmentMethod;
 use Hwkdo\IntranetAppDokumente\Enums\DocumentNewsTitleImageMode;
 use Hwkdo\IntranetAppDokumente\Livewire\Concerns\ManagesDocuments;
 use Hwkdo\IntranetAppDokumente\Models\Document;
@@ -56,6 +57,19 @@ class Index extends Component
 
     public bool $uploadRequiresAcknowledgment = false;
 
+    public string $uploadAcknowledgmentMethod = 'password';
+
+    public ?string $uploadFormwerkFormUrl = null;
+
+    public bool $uploadFormwerkUseCustomPayload = false;
+
+    /** @var list<array{key: string, value: string}> */
+    public array $uploadFormwerkPayload = [];
+
+    public bool $uploadIsOnboardingIt = false;
+
+    public bool $uploadIsOnboardingPerso = false;
+
     public bool $uploadShowInNewsSlider = false;
 
     public string $uploadNewsTitleImageMode = 'auto';
@@ -99,11 +113,24 @@ class Index extends Component
         $this->uploadGvpId = auth()->user()?->gvp_id;
         $this->uploadCategoryId = null;
         $this->uploadRequiresAcknowledgment = false;
+        $this->uploadAcknowledgmentMethod = AcknowledgmentMethod::Password->value;
+        $this->uploadFormwerkFormUrl = null;
+        $this->uploadFormwerkUseCustomPayload = false;
+        $this->uploadFormwerkPayload = [];
+        $this->uploadIsOnboardingIt = false;
+        $this->uploadIsOnboardingPerso = false;
         $this->uploadShowInNewsSlider = false;
         $this->uploadNewsTitleImageMode = DocumentNewsTitleImageMode::Auto->value;
         $this->uploadNewsTitleImage = null;
         $this->uploadFile = null;
         $this->resetValidation();
+    }
+
+    public function updatedUploadFormwerkUseCustomPayload(bool $value): void
+    {
+        if ($value && $this->uploadFormwerkPayload === []) {
+            $this->uploadFormwerkPayload = [['key' => '', 'value' => '']];
+        }
     }
 
     public function updatedUploadResponsibleId(?int $value): void
@@ -123,7 +150,15 @@ class Index extends Component
 
         if (! auth()->user()?->can(DocumentPermissions::kenntnisnahme())) {
             $this->uploadRequiresAcknowledgment = false;
+            $this->uploadAcknowledgmentMethod = AcknowledgmentMethod::Password->value;
+            $this->uploadFormwerkFormUrl = null;
+            $this->uploadFormwerkUseCustomPayload = false;
+            $this->uploadFormwerkPayload = [];
+            $this->uploadIsOnboardingIt = false;
+            $this->uploadIsOnboardingPerso = false;
         }
+
+        $this->blankFormwerkUrl('upload');
 
         $canChooseGvp = auth()->user()?->can(DocumentPermissions::chooseGvp()) ?? false;
 
@@ -145,7 +180,7 @@ class Index extends Component
             $rules['uploadNewsTitleImage'] = ['required', 'image', 'max:10240'];
         }
 
-        $this->validate($rules);
+        $this->validate(array_merge($rules, $this->acknowledgmentValidationRules('upload')));
 
         $user = User::findOrFail($this->uploadResponsibleId);
         $gvpId = $canChooseGvp ? $this->uploadGvpId : $user->gvp_id;
@@ -161,6 +196,7 @@ class Index extends Component
                 'gvp_id' => $gvpId,
                 'category_id' => $this->uploadCategoryId,
                 'requires_acknowledgment' => $this->uploadRequiresAcknowledgment,
+                ...$this->formwerkAcknowledgmentAttributes('upload'),
             ],
             file: $this->uploadFile,
             showInNewsSlider: $this->uploadShowInNewsSlider,

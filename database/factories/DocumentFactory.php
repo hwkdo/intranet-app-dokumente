@@ -23,6 +23,8 @@ class DocumentFactory extends Factory
             'gueltig_bis' => null,
             'aktiv' => true,
             'requires_acknowledgment' => false,
+            'acknowledgment_method' => 'password',
+            'formwerk_use_custom_payload' => false,
             'is_onboarding_it' => false,
             'is_onboarding_perso' => false,
             'uploader_id' => null,

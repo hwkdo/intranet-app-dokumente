@@ -7,6 +7,7 @@ namespace Hwkdo\IntranetAppDokumente\Models;
 use App\Models\Gvp;
 use App\Models\User;
 use Hwkdo\IntranetAppDokumente\Database\Factories\DocumentFactory;
+use Hwkdo\IntranetAppDokumente\Enums\AcknowledgmentMethod;
 use Hwkdo\IntranetAppDokumente\Services\DocumentGvpResolver;
 use Hwkdo\IntranetAppDokumente\Services\DocumentMatrixService;
 use Illuminate\Database\Eloquent\Builder;
@@ -52,6 +53,9 @@ class Document extends Model
         return [
             'aktiv' => 'boolean',
             'requires_acknowledgment' => 'boolean',
+            'acknowledgment_method' => AcknowledgmentMethod::class,
+            'formwerk_use_custom_payload' => 'boolean',
+            'formwerk_payload' => 'array',
             'is_onboarding_it' => 'boolean',
             'is_onboarding_perso' => 'boolean',
             'gueltig_bis' => 'date',
@@ -161,6 +165,34 @@ class Document extends Model
     protected function makeAllSearchableUsing(Builder $query): Builder
     {
         return $query->with(['category', 'uploader']);
+    }
+
+    public function usesFormwerkAcknowledgment(): bool
+    {
+        if (! $this->requires_acknowledgment) {
+            return false;
+        }
+
+        $method = $this->acknowledgment_method;
+
+        return $method === AcknowledgmentMethod::Formwerk
+            || $method === AcknowledgmentMethod::Formwerk->value;
+    }
+
+    /**
+     * @param  Builder<Document>  $query
+     * @return Builder<Document>
+     */
+    public function scopeFormwerkOnboarding(Builder $query): Builder
+    {
+        return $query
+            ->gueltig()
+            ->where('requires_acknowledgment', true)
+            ->where('acknowledgment_method', AcknowledgmentMethod::Formwerk)
+            ->where(function (Builder $inner): void {
+                $inner->where('is_onboarding_it', true)
+                    ->orWhere('is_onboarding_perso', true);
+            });
     }
 
     public function isGueltig(): bool
