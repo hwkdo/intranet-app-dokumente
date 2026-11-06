@@ -341,79 +341,169 @@
         </flux:modal>
 
         @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::upload())
-            <flux:modal wire:model="showUploadModal" name="upload-document" class="md:max-w-2xl">
-                <form wire:submit="saveUpload" class="space-y-4">
-                    <flux:heading size="lg" class="mb-4">Dokument hochladen</flux:heading>
-                    <flux:input wire:model="uploadTitle" label="Titel" required />
-                    <flux:textarea wire:model="uploadDescription" label="Beschreibung" rows="3" />
-                    <flux:input wire:model="uploadGueltigBis" type="date" label="Gültig bis (leer = unbegrenzt)" />
-                    <flux:switch wire:model="uploadAktiv" label="Aktiv" />
-                    <flux:select wire:model.live="uploadResponsibleId" variant="listbox" searchable label="Verantwortliche/r" placeholder="Verantwortliche/n suchen…" required>
-                        @foreach($this->usersForSelect as $id => $label)
-                            <flux:select.option :value="$id">{{ $label }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::chooseGvp())
-                        <flux:select wire:model.live="uploadGvpId" variant="listbox" searchable label="GVP" placeholder="GVP auswählen" required>
-                            @foreach($this->gvpsForSelect as $id => $label)
-                                <flux:select.option :value="$id">{{ $label }}</flux:select.option>
-                            @endforeach
-                        </flux:select>
-                    @endcan
-                    <flux:select wire:model.live="uploadCategoryId" variant="listbox" label="Kategorie" placeholder="Kategorie auswählen" required>
-                        @foreach($this->categories as $cat)
-                            <flux:select.option :value="$cat->id">{{ $cat->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
+            <flux:modal wire:model="showUploadModal" name="upload-document" class="w-full md:max-w-5xl">
+                <form wire:submit="saveUpload" class="space-y-8">
+                    <div>
+                        <flux:heading size="xl">Dokument hochladen</flux:heading>
+                        <flux:text class="mt-1">Datei auswählen, zuordnen und festlegen, ob Benutzer das Dokument bestätigen müssen.</flux:text>
+                    </div>
+
+                    <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
+                        <div>
+                            <flux:heading size="lg">Dokument</flux:heading>
+                            <flux:text class="mt-1 text-sm">Datei, Titel und Beschreibung.</flux:text>
+                        </div>
+                        <div class="space-y-4">
+                            <flux:file-upload wire:model="uploadFile" label="Datei">
+                                <flux:file-upload.dropzone
+                                    heading="Datei hierher ziehen oder auswählen"
+                                    text="Max. 50 MB"
+                                    with-progress
+                                    inline
+                                />
+                            </flux:file-upload>
+                            @if($uploadFile)
+                                <flux:file-item :heading="$uploadFile->getClientOriginalName()" :size="$uploadFile->getSize()">
+                                    <x-slot:actions>
+                                        <flux:file-item.remove wire:click="$set('uploadFile', null)" />
+                                    </x-slot:actions>
+                                </flux:file-item>
+                            @endif
+                            @error('uploadFile')
+                                <flux:text class="text-red-600">{{ $message }}</flux:text>
+                            @enderror
+                            <flux:input wire:model="uploadTitle" label="Titel" required />
+                            <flux:textarea wire:model="uploadDescription" label="Beschreibung" rows="3" />
+                        </div>
+                    </section>
+
+                    <flux:separator variant="subtle" />
+
+                    <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
+                        <div>
+                            <flux:heading size="lg">Zuordnung</flux:heading>
+                            <flux:text class="mt-1 text-sm">Kategorie, Verantwortung und Gültigkeit.</flux:text>
+                        </div>
+                        <div class="grid items-start gap-4 sm:grid-cols-2">
+                            <flux:select wire:model.live="uploadCategoryId" variant="listbox" label="Kategorie" placeholder="Kategorie auswählen" required>
+                                @foreach($this->categories as $cat)
+                                    <flux:select.option :value="$cat->id">{{ $cat->name }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:select wire:model.live="uploadResponsibleId" variant="listbox" searchable label="Verantwortliche/r" placeholder="Verantwortliche/n suchen…" required>
+                                @foreach($this->usersForSelect as $id => $label)
+                                    <flux:select.option :value="$id">{{ $label }}</flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::chooseGvp())
+                                <flux:select wire:model.live="uploadGvpId" variant="listbox" searchable label="GVP" placeholder="GVP auswählen" required>
+                                    @foreach($this->gvpsForSelect as $id => $label)
+                                        <flux:select.option :value="$id">{{ $label }}</flux:select.option>
+                                    @endforeach
+                                </flux:select>
+                            @endcan
+                            <flux:input wire:model="uploadGueltigBis" type="date" label="Gültig bis" description:trailing="Leer = unbegrenzt gültig" />
+                            <div class="sm:col-span-2">
+                                <flux:switch wire:model="uploadAktiv" align="left" label="Aktiv" description="Inaktive Dokumente erscheinen nicht in der Übersicht." />
+                            </div>
+                        </div>
+                    </section>
+
                     @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::kenntnisnahme())
-                        <flux:switch wire:model.live="uploadRequiresAcknowledgment" label="Zur Kenntnisnahme" />
-                        @include('intranet-app-dokumente::partials.acknowledgment-method-fields')
+                        <flux:separator variant="subtle" />
+
+                        <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
+                            <div>
+                                <flux:heading size="lg">Kenntnisnahme</flux:heading>
+                                <flux:text class="mt-1 text-sm">Ob und wie Benutzer das Dokument bestätigen müssen.</flux:text>
+                            </div>
+                            <div>
+                                @include('intranet-app-dokumente::partials.acknowledgment-method-fields', ['showOnboarding' => false])
+                            </div>
+                        </section>
+
+                        <flux:separator variant="subtle" />
+
+                        <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
+                            <div>
+                                <flux:heading size="lg">Onboarding</flux:heading>
+                                <flux:text class="mt-1 text-sm">Dokument neuen Mitarbeitenden im Onboarding bereitstellen.</flux:text>
+                            </div>
+                            <div>
+                                @include('intranet-app-dokumente::partials.acknowledgment-method-fields', ['showAcknowledgment' => false])
+                            </div>
+                        </section>
                     @endcan
-                    <flux:switch wire:model="uploadShowInNewsSlider" label="In News-Slider anzeigen" />
-                    <flux:radio.group wire:model.live="uploadNewsTitleImageMode" label="News-Titelbild">
-                        <flux:radio value="auto" label="Automatisch generiertes Titelbild verwenden" description="Dokument-Vorschau im Rahmenbild" />
-                        <flux:radio value="custom" label="Eigenes Titelbild" description="Eigenes Bild hochladen" />
-                        <flux:radio value="default" label="Standard-News-Titelbild verwenden" description="Allgemeines Intranet-Standardbild" />
-                    </flux:radio.group>
-                    @if($uploadNewsTitleImageMode === 'custom')
-                        <flux:file-upload wire:model="uploadNewsTitleImage" label="Eigenes Titelbild">
-                            <flux:file-upload.dropzone
-                                heading="Titelbild hierher ziehen oder auswählen"
-                                text="JPG, PNG, WebP · max. 10 MB"
-                                with-progress
+
+                    <flux:separator variant="subtle" />
+
+                    <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
+                        <div>
+                            <flux:heading size="lg">News</flux:heading>
+                            <flux:text class="mt-1 text-sm">Beim Hochladen wird immer eine News in der Kategorie „{{ \Hwkdo\IntranetAppDokumente\Services\DocumentNewsService::CATEGORY_NAME }}“ veröffentlicht.</flux:text>
+                        </div>
+                        <div class="space-y-4">
+                            <flux:radio.group wire:model.live="uploadNewsTitleImageMode" label="Titelbild der News" variant="cards" class="max-lg:flex-col">
+                                <flux:radio value="auto" icon="sparkles" label="Automatisch" description="Dokument-Vorschau im Rahmenbild" />
+                                <flux:radio value="custom" icon="photo" label="Eigenes Bild" description="Eigenes Bild hochladen" />
+                                <flux:radio value="default" icon="newspaper" label="Standardbild" description="Allgemeines Intranet-Standardbild" />
+                            </flux:radio.group>
+                            @if($uploadNewsTitleImageMode === 'custom')
+                                <flux:file-upload wire:model="uploadNewsTitleImage" label="Eigenes Titelbild">
+                                    <flux:file-upload.dropzone
+                                        heading="Titelbild hierher ziehen oder auswählen"
+                                        text="JPG, PNG, WebP · max. 10 MB"
+                                        with-progress
+                                        inline
+                                    />
+                                </flux:file-upload>
+                                @if($uploadNewsTitleImage)
+                                    <flux:file-item :heading="$uploadNewsTitleImage->getClientOriginalName()" :size="$uploadNewsTitleImage->getSize()">
+                                        <x-slot:actions>
+                                            <flux:file-item.remove wire:click="$set('uploadNewsTitleImage', null)" />
+                                        </x-slot:actions>
+                                    </flux:file-item>
+                                @endif
+                                @error('uploadNewsTitleImage')
+                                    <flux:text class="text-red-600">{{ $message }}</flux:text>
+                                @enderror
+                            @endif
+                            <flux:switch
+                                wire:model="uploadShowInNewsSlider"
+                                align="left"
+                                label="Zusätzlich im News-Slider anzeigen"
+                                description="Die News erscheint auch ohne Slider in der News-Übersicht."
                             />
-                        </flux:file-upload>
-                        @if($uploadNewsTitleImage)
-                            <flux:file-item :heading="$uploadNewsTitleImage->getClientOriginalName()" :size="$uploadNewsTitleImage->getSize()">
-                                <x-slot:actions>
-                                    <flux:file-item.remove wire:click="$set('uploadNewsTitleImage', null)" />
-                                </x-slot:actions>
-                            </flux:file-item>
-                        @endif
-                        @error('uploadNewsTitleImage')
-                            <flux:text class="text-red-600">{{ $message }}</flux:text>
-                        @enderror
+                        </div>
+                    </section>
+
+                    @if($showUploadModal)
+                        @php($recipients = $this->uploadRecipientEstimate)
+                        <flux:callout icon="bell" variant="secondary">
+                            <flux:callout.heading>Benachrichtigungen beim Speichern</flux:callout.heading>
+                            <flux:callout.text>
+                                <ul class="mt-1 space-y-1">
+                                    <li wire:key="upload-recipients-news">
+                                        <strong>{{ number_format($recipients['news'], 0, ',', '.') }}</strong>
+                                        {{ $recipients['news'] === 1 ? 'Benutzer erhält' : 'Benutzer erhalten' }}
+                                        eine News-Benachrichtigung (News-Kategorie „{{ $recipients['newsCategory'] }}“, laut Benachrichtigungseinstellungen).
+                                    </li>
+                                    @if($uploadRequiresAcknowledgment)
+                                        <li wire:key="upload-recipients-acknowledgment" x-show="$wire.uploadRequiresAcknowledgment">
+                                            <strong>{{ number_format($recipients['acknowledgment'], 0, ',', '.') }}</strong>
+                                            {{ $recipients['acknowledgment'] === 1 ? 'Benutzer wird' : 'Benutzer werden' }}
+                                            zur Kenntnisnahme aufgefordert (Pflicht-Benachrichtigung, nicht abbestellbar).
+                                        </li>
+                                    @endif
+                                </ul>
+                            </flux:callout.text>
+                        </flux:callout>
                     @endif
-                    <flux:file-upload wire:model="uploadFile" label="Datei">
-                        <flux:file-upload.dropzone
-                            heading="Datei hierher ziehen oder auswählen"
-                            text="Max. 50 MB"
-                            with-progress
-                        />
-                    </flux:file-upload>
-                    @if($uploadFile)
-                        <flux:file-item :heading="$uploadFile->getClientOriginalName()" :size="$uploadFile->getSize()">
-                            <x-slot:actions>
-                                <flux:file-item.remove wire:click="$set('uploadFile', null)" />
-                            </x-slot:actions>
-                        </flux:file-item>
-                    @endif
-                    @error('uploadFile')
-                        <flux:text class="text-red-600">{{ $message }}</flux:text>
-                    @enderror
-                    <div class="flex gap-2 pt-4">
-                        <flux:button type="submit" variant="primary">Speichern</flux:button>
+
+                    <div class="flex items-center gap-2">
+                        <flux:spacer />
                         <flux:button type="button" wire:click="closeUploadModal" variant="ghost">Abbrechen</flux:button>
+                        <flux:button type="submit" variant="primary" icon="arrow-up-tray">Hochladen</flux:button>
                     </div>
                 </form>
             </flux:modal>

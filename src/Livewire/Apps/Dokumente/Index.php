@@ -13,6 +13,7 @@ use Hwkdo\IntranetAppDokumente\Livewire\Concerns\ManagesDocuments;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Services\DocumentLifecycleService;
 use Hwkdo\IntranetAppDokumente\Services\DocumentMatrixService;
+use Hwkdo\IntranetAppDokumente\Services\DocumentUploadRecipientEstimator;
 use Hwkdo\IntranetAppDokumente\Support\DocumentPermissions;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -60,6 +61,8 @@ class Index extends Component
     public string $uploadAcknowledgmentMethod = 'password';
 
     public ?string $uploadFormwerkFormUrl = null;
+
+    public string $uploadFormwerkUrlMode = 'standard';
 
     public bool $uploadFormwerkUseCustomPayload = false;
 
@@ -115,6 +118,7 @@ class Index extends Component
         $this->uploadRequiresAcknowledgment = false;
         $this->uploadAcknowledgmentMethod = AcknowledgmentMethod::Password->value;
         $this->uploadFormwerkFormUrl = null;
+        $this->uploadFormwerkUrlMode = 'standard';
         $this->uploadFormwerkUseCustomPayload = false;
         $this->uploadFormwerkPayload = [];
         $this->uploadIsOnboardingIt = false;
@@ -152,6 +156,7 @@ class Index extends Component
             $this->uploadRequiresAcknowledgment = false;
             $this->uploadAcknowledgmentMethod = AcknowledgmentMethod::Password->value;
             $this->uploadFormwerkFormUrl = null;
+            $this->uploadFormwerkUrlMode = 'standard';
             $this->uploadFormwerkUseCustomPayload = false;
             $this->uploadFormwerkPayload = [];
             $this->uploadIsOnboardingIt = false;
@@ -208,6 +213,21 @@ class Index extends Component
 
         Flux::toast(heading: 'Hochgeladen', text: 'Dokument wurde gespeichert.', variant: 'success');
         $this->closeUploadModal();
+    }
+
+    /**
+     * @return array{newsCategory: string, news: int, acknowledgment: int}
+     */
+    #[Computed]
+    public function uploadRecipientEstimate(): array
+    {
+        $estimator = app(DocumentUploadRecipientEstimator::class);
+
+        return [
+            'newsCategory' => $estimator->newsCategoryName(),
+            'news' => $estimator->newsRecipients(),
+            'acknowledgment' => $this->uploadRequiresAcknowledgment ? $estimator->acknowledgmentRecipients() : 0,
+        ];
     }
 
     #[Computed]

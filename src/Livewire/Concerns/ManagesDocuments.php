@@ -10,6 +10,7 @@ use Hwkdo\IntranetAppDokumente\Enums\AcknowledgmentMethod;
 use Hwkdo\IntranetAppDokumente\Enums\DocumentNewsTitleImageMode;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Models\DocumentCategory;
+use Hwkdo\IntranetAppDokumente\Models\IntranetAppDokumenteSettings;
 use Hwkdo\IntranetAppDokumente\Services\DocumentAcknowledgmentService;
 use Hwkdo\IntranetAppDokumente\Services\DocumentLifecycleService;
 use Hwkdo\IntranetAppDokumente\Support\DocumentPermissions;
@@ -56,6 +57,8 @@ trait ManagesDocuments
     public string $updateAcknowledgmentMethod = 'password';
 
     public ?string $updateFormwerkFormUrl = null;
+
+    public string $updateFormwerkUrlMode = 'standard';
 
     public bool $updateFormwerkUseCustomPayload = false;
 
@@ -205,6 +208,7 @@ trait ManagesDocuments
             $this->updateRequiresAcknowledgment = $document->requires_acknowledgment;
             $this->updateAcknowledgmentMethod = $document->acknowledgment_method?->value ?? AcknowledgmentMethod::Password->value;
             $this->updateFormwerkFormUrl = $document->formwerk_form_url;
+            $this->updateFormwerkUrlMode = $this->formwerkUrlModeFor($document->formwerk_form_url);
             $this->updateFormwerkUseCustomPayload = (bool) $document->formwerk_use_custom_payload;
             $this->updateFormwerkPayload = $this->formwerkPayloadRows($document->formwerk_payload);
         }
@@ -247,6 +251,7 @@ trait ManagesDocuments
         $this->updateRequiresAcknowledgment = $document->requires_acknowledgment;
         $this->updateAcknowledgmentMethod = $document->acknowledgment_method?->value ?? AcknowledgmentMethod::Password->value;
         $this->updateFormwerkFormUrl = $document->formwerk_form_url;
+        $this->updateFormwerkUrlMode = $this->formwerkUrlModeFor($document->formwerk_form_url);
         $this->updateFormwerkUseCustomPayload = (bool) $document->formwerk_use_custom_payload;
         $this->updateFormwerkPayload = $this->formwerkPayloadRows($document->formwerk_payload);
         $this->updateIsOnboardingIt = (bool) $document->is_onboarding_it;
@@ -276,6 +281,7 @@ trait ManagesDocuments
             $this->updateRequiresAcknowledgment = $document->requires_acknowledgment;
             $this->updateAcknowledgmentMethod = $document->acknowledgment_method?->value ?? AcknowledgmentMethod::Password->value;
             $this->updateFormwerkFormUrl = $document->formwerk_form_url;
+            $this->updateFormwerkUrlMode = $this->formwerkUrlModeFor($document->formwerk_form_url);
             $this->updateFormwerkUseCustomPayload = (bool) $document->formwerk_use_custom_payload;
             $this->updateFormwerkPayload = $this->formwerkPayloadRows($document->formwerk_payload);
             $this->updateIsOnboardingIt = (bool) $document->is_onboarding_it;
@@ -446,7 +452,11 @@ trait ManagesDocuments
             return $rules;
         }
 
-        $rules[$prefix.'FormwerkFormUrl'] = ['nullable', 'string', 'max:2048', 'url'];
+        $rules[$prefix.'FormwerkUrlMode'] = ['required', 'in:standard,custom'];
+
+        if ($this->{$prefix.'FormwerkUrlMode'} === 'custom') {
+            $rules[$prefix.'FormwerkFormUrl'] = ['required', 'string', 'max:2048', 'url'];
+        }
 
         if ($this->{$prefix.'FormwerkUseCustomPayload'}) {
             $rules[$prefix.'FormwerkPayload'] = ['array'];
@@ -460,9 +470,21 @@ trait ManagesDocuments
     protected function blankFormwerkUrl(string $prefix): void
     {
         $property = $prefix.'FormwerkFormUrl';
-        if (trim((string) ($this->{$property} ?? '')) === '') {
+        if ($this->{$prefix.'FormwerkUrlMode'} !== 'custom' || trim((string) ($this->{$property} ?? '')) === '') {
             $this->{$property} = null;
         }
+    }
+
+    protected function formwerkUrlModeFor(?string $url): string
+    {
+        return trim((string) $url) !== '' ? 'custom' : 'standard';
+    }
+
+    public function getFormwerkStandardFormUrlProperty(): ?string
+    {
+        $url = trim((string) (IntranetAppDokumenteSettings::resolvedAppSettings()->formwerkAcknowledgmentFormUrl ?? ''));
+
+        return $url !== '' ? $url : null;
     }
 
     /**

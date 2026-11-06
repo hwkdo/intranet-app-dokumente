@@ -276,26 +276,28 @@
             'showAcknowledgment' => false,
         ])
         @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::kenntnisnahme())
-            <flux:switch wire:model.live="updateRequiresAcknowledgment" label="Zur Kenntnisnahme" />
             @include('intranet-app-dokumente::partials.acknowledgment-method-fields', [
                 'requiresModel' => 'updateRequiresAcknowledgment',
                 'methodModel' => 'updateAcknowledgmentMethod',
                 'urlModel' => 'updateFormwerkFormUrl',
+                'urlModeModel' => 'updateFormwerkUrlMode',
                 'customModel' => 'updateFormwerkUseCustomPayload',
                 'rowsModel' => 'updateFormwerkPayload',
                 'onboardingItModel' => 'updateIsOnboardingIt',
                 'onboardingPersoModel' => 'updateIsOnboardingPerso',
+                'reAcknowledgmentModel' => 'updateRequireReAcknowledgment',
                 'target' => 'update',
                 'showOnboarding' => false,
             ])
+        @else
+            @if($updateRequiresAcknowledgment)
+                <flux:switch
+                    wire:model="updateRequireReAcknowledgment"
+                    label="Erneute Kenntnisnahme aller Benutzer erforderlich"
+                    description="Wenn deaktiviert, gilt die neue Version ohne erneute Bestätigung als zur Kenntnis genommen."
+                />
+            @endif
         @endcan
-        @if($updateRequiresAcknowledgment)
-            <flux:switch
-                wire:model="updateRequireReAcknowledgment"
-                label="Erneute Kenntnisnahme aller Benutzer erforderlich"
-                description="Wenn deaktiviert, gilt die neue Version ohne erneute Bestätigung als zur Kenntnis genommen."
-            />
-        @endif
         <flux:switch wire:model="updateShowInNewsSlider" label="In News-Slider anzeigen" />
         <flux:radio.group wire:model.live="updateNewsTitleImageMode" label="News-Titelbild">
             <flux:radio value="auto" label="Automatisch generiertes Titelbild verwenden" description="Dokument-Vorschau im Rahmenbild" />
@@ -372,11 +374,11 @@
             'showAcknowledgment' => false,
         ])
         @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::kenntnisnahme())
-            <flux:switch wire:model.live="updateRequiresAcknowledgment" label="Zur Kenntnisnahme" />
             @include('intranet-app-dokumente::partials.acknowledgment-method-fields', [
                 'requiresModel' => 'updateRequiresAcknowledgment',
                 'methodModel' => 'updateAcknowledgmentMethod',
                 'urlModel' => 'updateFormwerkFormUrl',
+                'urlModeModel' => 'updateFormwerkUrlMode',
                 'customModel' => 'updateFormwerkUseCustomPayload',
                 'rowsModel' => 'updateFormwerkPayload',
                 'onboardingItModel' => 'updateIsOnboardingIt',
