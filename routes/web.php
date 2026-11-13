@@ -19,6 +19,10 @@ Route::middleware(['web', 'auth', 'can:see-app-dokumente'])->group(function (): 
 
     Route::livewire('apps/dokumente/suche', 'intranet-app-dokumente::apps.dokumente.search')->name('apps.dokumente.search');
 
+    Route::livewire('apps/dokumente/chat', 'intranet-app-dokumente::apps.dokumente.chat')
+        ->middleware('can:allow_ai_usage')
+        ->name('apps.dokumente.chat');
+
     Route::get('apps/dokumente/download/{document}', DownloadDocumentController::class)
         ->whereNumber('document')
         ->name('apps.dokumente.download');

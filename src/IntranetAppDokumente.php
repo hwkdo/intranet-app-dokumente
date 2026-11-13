@@ -110,6 +110,24 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesBackgroundAc
     {
         return [
             new SearchActionDefinition(
+                key: 'dokumente.chat',
+                title: 'KI-Chat',
+                keywords: [
+                    'ki chat',
+                    'ki-chat',
+                    'dokumente chat',
+                    'dokumente fragen',
+                    'chat',
+                ],
+                routeName: 'apps.dokumente.chat',
+                appIdentifier: self::identifier(),
+                appName: self::app_name(),
+                icon: 'chat-bubble-left-right',
+                permission: 'allow_ai_usage',
+                subtitle: self::app_name(),
+                sort: 90,
+            ),
+            new SearchActionDefinition(
                 key: 'dokumente.lightrag',
                 title: 'LightRAG',
                 keywords: [
