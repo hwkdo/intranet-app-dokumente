@@ -58,9 +58,14 @@
                     white-space: normal;
                     overflow-wrap: anywhere;
                 }
+                /*
+                 * Summe muss den Zähl-Chip samt Zellen-Padding fassen.
+                 * 3rem ließ dreistellige Werte über den Tabellenrand laufen
+                 * und hielt den horizontalen Scrollbalken auch bei voller Breite.
+                 */
                 [data-dokumente-matrix] th[data-flux-column]:last-child,
                 [data-dokumente-matrix] td:last-child {
-                    width: 3rem;
+                    width: 4.5rem;
                 }
                 [data-dokumente-matrix] th[data-flux-column]:not(:first-child):not(:last-child),
                 [data-dokumente-matrix] td:not(:first-child):not(:last-child) {
@@ -78,7 +83,7 @@
                             <span class="block w-full text-center whitespace-normal break-words hyphens-auto text-sm">{{ $cat->name }}</span>
                         </flux:table.column>
                     @endforeach
-                    <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! text-center w-12">∑</flux:table.column>
+                    <flux:table.column class="bg-[#073070]! dark:bg-[#04214e]! text-white! text-center">∑</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     {{-- HGF row (nur Dokumente mit gvp_id = HGF, kein Rollup) --}}
@@ -90,24 +95,19 @@
                         @foreach($categories as $cat)
                             @php $cnt = $m[$cat->id] ?? 0; @endphp
                             <flux:table.cell class="bg-white/50 dark:bg-[#04214e]/40 text-center">
-                                @if($cnt > 0)
-                                    <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $hgfDirectId }}', '{{ addslashes($cat->name) }}', '{{ addslashes($hgf->bezeichnung) }}')" class="text-blue-600 hover:underline">
-                                        {{ $cnt }}
-                                    </button>
-                                @else
-                                    {{ $cnt }}
-                                @endif
+                                <x-intranet-app-dokumente::matrix-count
+                                    :count="$cnt"
+                                    wire:click="openDocumentListModal({{ $cat->id }}, '{{ $hgfDirectId }}', '{{ addslashes($cat->name) }}', '{{ addslashes($hgf->bezeichnung) }}')"
+                                />
                             </flux:table.cell>
                         @endforeach
                         @php $hgfAll = $m['all'] ?? 0; @endphp
                         <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
-                            @if($hgfAll > 0)
-                                <button type="button" wire:click="openDocumentListModal(null, '{{ $hgfDirectId }}', 'Alle', '{{ addslashes($hgf->bezeichnung) }}')" class="text-white! hover:underline">
-                                    {{ $hgfAll }}
-                                </button>
-                            @else
-                                {{ $hgfAll }}
-                            @endif
+                            <x-intranet-app-dokumente::matrix-count
+                                :count="$hgfAll"
+                                variant="navy"
+                                wire:click="openDocumentListModal(null, '{{ $hgfDirectId }}', 'Alle', '{{ addslashes($hgf->bezeichnung) }}')"
+                            />
                         </flux:table.cell>
                     </flux:table.row>
 
@@ -120,24 +120,19 @@
                         @foreach($categories as $cat)
                             @php $cnt = $stabM[$cat->id] ?? 0; @endphp
                             <flux:table.cell class="bg-white/50 dark:bg-[#04214e]/40 text-center">
-                                @if($cnt > 0)
-                                    <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $stabIdsStr }}', '{{ addslashes($cat->name) }}', 'Stab')" class="text-blue-600 hover:underline">
-                                        {{ $cnt }}
-                                    </button>
-                                @else
-                                    {{ $cnt }}
-                                @endif
+                                <x-intranet-app-dokumente::matrix-count
+                                    :count="$cnt"
+                                    wire:click="openDocumentListModal({{ $cat->id }}, '{{ $stabIdsStr }}', '{{ addslashes($cat->name) }}', 'Stab')"
+                                />
                             </flux:table.cell>
                         @endforeach
                         @php $stabAll = $stabM['all'] ?? 0; @endphp
                         <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
-                            @if($stabAll > 0)
-                                <button type="button" wire:click="openDocumentListModal(null, '{{ $stabIdsStr }}', 'Alle', 'Stab')" class="text-white! hover:underline">
-                                    {{ $stabAll }}
-                                </button>
-                            @else
-                                {{ $stabAll }}
-                            @endif
+                            <x-intranet-app-dokumente::matrix-count
+                                :count="$stabAll"
+                                variant="navy"
+                                wire:click="openDocumentListModal(null, '{{ $stabIdsStr }}', 'Alle', 'Stab')"
+                            />
                         </flux:table.cell>
                     </flux:table.row>
 
@@ -149,23 +144,18 @@
                                 @foreach($categories as $cat)
                                     @php $cnt = $stabDirect[$cat->id] ?? 0; @endphp
                                     <flux:table.cell class="text-center">
-                                        @if($cnt > 0)
-                                            <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $stab->id }}', '{{ addslashes($cat->name) }}', '{{ addslashes($stab->bezeichnung) }}')" class="text-blue-600 hover:underline">
-                                                {{ $cnt }}
-                                            </button>
-                                        @else
-                                            {{ $cnt }}
-                                        @endif
+                                        <x-intranet-app-dokumente::matrix-count
+                                            :count="$cnt"
+                                            wire:click="openDocumentListModal({{ $cat->id }}, '{{ $stab->id }}', '{{ addslashes($cat->name) }}', '{{ addslashes($stab->bezeichnung) }}')"
+                                        />
                                     </flux:table.cell>
                                 @endforeach
                                 <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
-                                    @if($stabDocCount > 0)
-                                        <button type="button" wire:click="openDocumentListModal(null, '{{ $stab->id }}', 'Alle', '{{ addslashes($stab->bezeichnung) }}')" class="text-white! hover:underline">
-                                            {{ $stabDocCount }}
-                                        </button>
-                                    @else
-                                        {{ $stabDocCount }}
-                                    @endif
+                                    <x-intranet-app-dokumente::matrix-count
+                                        :count="$stabDocCount"
+                                        variant="navy"
+                                        wire:click="openDocumentListModal(null, '{{ $stab->id }}', 'Alle', '{{ addslashes($stab->bezeichnung) }}')"
+                                    />
                                 </flux:table.cell>
                             </flux:table.row>
                     @endforeach
@@ -180,24 +170,19 @@
                             @foreach($categories as $cat)
                                 @php $cnt = $gbM[$cat->id] ?? 0; @endphp
                                 <flux:table.cell class="bg-white/50 dark:bg-[#04214e]/40 text-center">
-                                    @if($cnt > 0)
-                                        <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $gbIds }}', '{{ addslashes($cat->name) }}', '{{ addslashes($gb->bezeichnung) }}')" class="text-blue-600 hover:underline">
-                                            {{ $cnt }}
-                                        </button>
-                                    @else
-                                        {{ $cnt }}
-                                    @endif
+                                    <x-intranet-app-dokumente::matrix-count
+                                        :count="$cnt"
+                                        wire:click="openDocumentListModal({{ $cat->id }}, '{{ $gbIds }}', '{{ addslashes($cat->name) }}', '{{ addslashes($gb->bezeichnung) }}')"
+                                    />
                                 </flux:table.cell>
                             @endforeach
                             @php $gbAll = $gbM['all'] ?? 0; @endphp
                             <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
-                                @if($gbAll > 0)
-                                    <button type="button" wire:click="openDocumentListModal(null, '{{ $gbIds }}', 'Alle', '{{ addslashes($gb->bezeichnung) }}')" class="text-white! hover:underline">
-                                        {{ $gbAll }}
-                                    </button>
-                                @else
-                                    {{ $gbAll }}
-                                @endif
+                                <x-intranet-app-dokumente::matrix-count
+                                    :count="$gbAll"
+                                    variant="navy"
+                                    wire:click="openDocumentListModal(null, '{{ $gbIds }}', 'Alle', '{{ addslashes($gb->bezeichnung) }}')"
+                                />
                             </flux:table.cell>
                         </flux:table.row>
 
@@ -208,23 +193,18 @@
                                 @foreach($categories as $cat)
                                     @php $cnt = $gbDirectM[$cat->id] ?? 0; @endphp
                                     <flux:table.cell class="text-center">
-                                        @if($cnt > 0)
-                                            <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $gb->id }}', '{{ addslashes($cat->name) }}', 'Geschäftsführung')" class="text-blue-600 hover:underline">
-                                                {{ $cnt }}
-                                            </button>
-                                        @else
-                                            {{ $cnt }}
-                                        @endif
+                                        <x-intranet-app-dokumente::matrix-count
+                                            :count="$cnt"
+                                            wire:click="openDocumentListModal({{ $cat->id }}, '{{ $gb->id }}', '{{ addslashes($cat->name) }}', 'Geschäftsführung')"
+                                        />
                                     </flux:table.cell>
                                 @endforeach
                                 <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
-                                    @if($gbDirectCount > 0)
-                                        <button type="button" wire:click="openDocumentListModal(null, '{{ $gb->id }}', 'Alle', 'Geschäftsführung')" class="text-white! hover:underline">
-                                            {{ $gbDirectCount }}
-                                        </button>
-                                    @else
-                                        {{ $gbDirectCount }}
-                                    @endif
+                                    <x-intranet-app-dokumente::matrix-count
+                                        :count="$gbDirectCount"
+                                        variant="navy"
+                                        wire:click="openDocumentListModal(null, '{{ $gb->id }}', 'Alle', 'Geschäftsführung')"
+                                    />
                                 </flux:table.cell>
                             </flux:table.row>
                             @foreach($gb->childGvps as $abt)
@@ -234,24 +214,19 @@
                                     @foreach($categories as $cat)
                                         @php $cnt = $abtM[$cat->id] ?? 0; @endphp
                                         <flux:table.cell class="text-center">
-                                            @if($cnt > 0)
-                                                <button type="button" wire:click="openDocumentListModal({{ $cat->id }}, '{{ $abtIds }}', '{{ addslashes($cat->name) }}', '{{ addslashes($abt->bezeichnung) }}')" class="text-blue-600 hover:underline">
-                                                    {{ $cnt }}
-                                                </button>
-                                            @else
-                                                {{ $cnt }}
-                                            @endif
+                                            <x-intranet-app-dokumente::matrix-count
+                                                :count="$cnt"
+                                                wire:click="openDocumentListModal({{ $cat->id }}, '{{ $abtIds }}', '{{ addslashes($cat->name) }}', '{{ addslashes($abt->bezeichnung) }}')"
+                                            />
                                         </flux:table.cell>
                                     @endforeach
                                     @php $abtAll = $abtM['all'] ?? 0; @endphp
                                     <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
-                                        @if($abtAll > 0)
-                                            <button type="button" wire:click="openDocumentListModal(null, '{{ $abtIds }}', 'Alle', '{{ addslashes($abt->bezeichnung) }}')" class="text-white! hover:underline">
-                                                {{ $abtAll }}
-                                            </button>
-                                        @else
-                                            {{ $abtAll }}
-                                        @endif
+                                        <x-intranet-app-dokumente::matrix-count
+                                            :count="$abtAll"
+                                            variant="navy"
+                                            wire:click="openDocumentListModal(null, '{{ $abtIds }}', 'Alle', '{{ addslashes($abt->bezeichnung) }}')"
+                                        />
                                     </flux:table.cell>
                                 </flux:table.row>
                             @endforeach
@@ -263,23 +238,19 @@
                         @foreach($categories as $cat)
                             @php $cnt = $this->countMatrix['category'][$cat->id] ?? 0; @endphp
                             <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
-                                @if($cnt > 0)
-                                    <button type="button" wire:click="openDocumentListModalByCategory({{ $cat->id }}, '{{ addslashes($cat->name) }}')" class="text-white! hover:underline">
-                                        {{ $cnt }}
-                                    </button>
-                                @else
-                                    {{ $cnt }}
-                                @endif
+                                <x-intranet-app-dokumente::matrix-count
+                                    :count="$cnt"
+                                    variant="navy"
+                                    wire:click="openDocumentListModalByCategory({{ $cat->id }}, '{{ addslashes($cat->name) }}')"
+                                />
                             </flux:table.cell>
                         @endforeach
                         <flux:table.cell class="bg-[#073070] dark:bg-[#04214e] text-white! text-center">
-                            @if($this->allDocumentsCount > 0)
-                                <button type="button" wire:click="openDocumentListModalAll()" class="text-white! hover:underline">
-                                    {{ $this->allDocumentsCount }}
-                                </button>
-                            @else
-                                {{ $this->allDocumentsCount }}
-                            @endif
+                            <x-intranet-app-dokumente::matrix-count
+                                :count="$this->allDocumentsCount"
+                                variant="navy"
+                                wire:click="openDocumentListModalAll()"
+                            />
                         </flux:table.cell>
                     </flux:table.row>
                 </flux:table.rows>
