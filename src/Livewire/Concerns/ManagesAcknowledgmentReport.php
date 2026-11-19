@@ -11,6 +11,8 @@ trait ManagesAcknowledgmentReport
 {
     public ?int $acknowledgmentReportDocumentId = null;
 
+    public int $acknowledgmentReportKey = 0;
+
     public function openAcknowledgmentReport(int $documentId): void
     {
         $document = Document::query()->withTrashed()->findOrFail($documentId);
@@ -20,12 +22,21 @@ trait ManagesAcknowledgmentReport
             $this->showDetailModal = false;
         }
 
+        $this->acknowledgmentReportKey++;
         $this->acknowledgmentReportDocumentId = $documentId;
     }
 
     #[On('acknowledgment-report-closed')]
-    public function closeAcknowledgmentReport(): void
+    public function closeAcknowledgmentReport(?int $documentId = null, ?int $reportKey = null): void
     {
+        if ($reportKey !== null && $reportKey !== $this->acknowledgmentReportKey) {
+            return;
+        }
+
+        if ($documentId !== null && $documentId !== $this->acknowledgmentReportDocumentId) {
+            return;
+        }
+
         $this->acknowledgmentReportDocumentId = null;
     }
 }

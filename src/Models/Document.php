@@ -280,9 +280,26 @@ class Document extends Model
     }
 
     /**
+     * Gültige Dokumente, deren aktuelle Version eine Kenntnisnahme verlangt.
+     * Legacy-Importe der Version 1 gelten als bereits erledigt.
+     *
      * @param  Builder<Document>  $query
      * @return Builder<Document>
      */
+    public function scopeRequiringCurrentAcknowledgment(Builder $query): Builder
+    {
+        return $query
+            ->gueltig()
+            ->where('requires_acknowledgment', true)
+            ->whereNotNull('current_version_id')
+            ->where(function (Builder $inner): void {
+                $inner->whereNull('legacy_id')
+                    ->orWhereHas('currentVersion', function (Builder $versionQuery): void {
+                        $versionQuery->where('version_number', '>', 1);
+                    });
+            });
+    }
+
     public function scopePendingAcknowledgmentFor(Builder $query, int $userId): Builder
     {
         return $query

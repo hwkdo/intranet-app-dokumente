@@ -12,6 +12,9 @@ Route::middleware(['web', 'auth', 'can:see-app-dokumente'])->group(function (): 
     Route::livewire('apps/dokumente', 'intranet-app-dokumente::apps.dokumente.index')->name('apps.dokumente.index');
 
     Route::livewire('apps/dokumente/meine', 'intranet-app-dokumente::apps.dokumente.meine-dokumente')->name('apps.dokumente.meine-dokumente');
+
+    Route::livewire('apps/dokumente/kenntnisnahme', 'intranet-app-dokumente::apps.dokumente.kenntnisnahme')
+        ->name('apps.dokumente.kenntnisnahme');
     Route::livewire('apps/dokumente/info', 'intranet-app-dokumente::apps.dokumente.info')->name('apps.dokumente.info');
 
     Route::livewire('apps/dokumente/settings/notifications', 'intranet-app-dokumente::apps.dokumente.settings.notifications')

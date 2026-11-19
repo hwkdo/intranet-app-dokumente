@@ -21,17 +21,20 @@ class AcknowledgmentReport extends Component
 
     public int $documentId;
 
+    public int $reportKey = 0;
+
     public bool $showModal = true;
 
     public string $statusFilter = 'all';
 
     public string $userSearch = '';
 
-    public function mount(int $documentId): void
+    public function mount(int $documentId, int $reportKey = 0): void
     {
         $document = Document::query()->withTrashed()->findOrFail($documentId);
         $this->authorize('viewAcknowledgmentReport', $document);
         $this->documentId = $documentId;
+        $this->reportKey = $reportKey;
     }
 
     public function updatedStatusFilter(): void
@@ -47,13 +50,13 @@ class AcknowledgmentReport extends Component
     public function close(): void
     {
         $this->showModal = false;
-        $this->dispatch('acknowledgment-report-closed');
+        $this->dispatch('acknowledgment-report-closed', documentId: $this->documentId, reportKey: $this->reportKey);
     }
 
     public function updatedShowModal(bool $value): void
     {
         if (! $value) {
-            $this->dispatch('acknowledgment-report-closed');
+            $this->dispatch('acknowledgment-report-closed', documentId: $this->documentId, reportKey: $this->reportKey);
         }
     }
 

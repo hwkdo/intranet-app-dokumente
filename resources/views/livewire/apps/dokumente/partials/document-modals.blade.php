@@ -15,53 +15,74 @@
                         <img
                             src="{{ $detailMedia->getUrl('thumb') }}"
                             alt="Vorschau {{ $document->title }}"
-                            class="max-h-48 w-auto rounded border border-zinc-200 object-contain dark:border-zinc-700"
+                            class="max-h-48 w-auto rounded-xl object-contain ring-1 ring-[#d0e3f9] dark:ring-white/10"
                         />
                     @else
-                        <div class="flex h-48 w-36 items-center justify-center rounded border border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800">
-                            <flux:icon name="document" class="size-16 text-zinc-400" />
+                        <div class="flex h-48 w-36 items-center justify-center rounded-xl bg-[#d0e3f9]/40 ring-1 ring-[#d0e3f9] dark:bg-[#04214e] dark:ring-white/10">
+                            <flux:icon name="document" class="size-16 text-[#456494]" />
                         </div>
                     @endif
                 </div>
                 <div class="min-w-0 flex-1 space-y-3">
-                    <div>
-                        <flux:heading size="lg">{{ $document->title }}</flux:heading>
+                    <div class="pe-10">
+                        <h2 class="text-lg font-semibold text-[#073070] dark:text-white">{{ $document->title }}</h2>
                         @if($document->trashed())
                             <flux:badge color="red" class="mt-2">Gelöscht</flux:badge>
                         @endif
                     </div>
 
-                    <div class="grid gap-3 md:grid-cols-2">
-                        <flux:text><strong>Kategorie:</strong> {{ $document->category?->name }}</flux:text>
-                        <flux:text>
-                            <strong>GVP:</strong>
-                            {{ $document->effectiveGvp()?->name ?? '—' }}
-                            @if($document->hasInvalidStoredGvp())
-                                <span class="text-amber-700 dark:text-amber-400">(Fallback)</span>
-                            @endif
-                        </flux:text>
-                        <flux:text><strong>Uploader:</strong> {{ $document->uploader?->name ?? '—' }}</flux:text>
-                        <flux:text><strong>Verantwortlich:</strong> {{ $document->responsible?->name ?? '—' }}</flux:text>
-                        <flux:text><strong>Gültig bis:</strong> {{ $document->gueltig_bis?->format('d.m.Y') ?? 'ohne Frist' }}</flux:text>
-                        <flux:text><strong>Aktiv:</strong> {{ $document->aktiv ? 'Ja' : 'Nein' }}</flux:text>
-                        <flux:text>
-                            <strong>Kenntnisnahme:</strong>
-                            @if(! $document->requires_acknowledgment)
-                                Nein
-                            @elseif($document->usesFormwerkAcknowledgment())
-                                Unterschrift (Formwerk)
-                            @else
-                                Passworteingabe
-                            @endif
-                        </flux:text>
+                    <dl class="hwk-rows divide-y divide-[#d0e3f9] dark:divide-white/10">
+                        <div>
+                            <dt>Kategorie</dt>
+                            <dd>{{ $document->category?->name }}</dd>
+                        </div>
+                        <div>
+                            <dt>GVP</dt>
+                            <dd>
+                                {{ $document->effectiveGvp()?->name ?? '—' }}
+                                @if($document->hasInvalidStoredGvp())
+                                    <span class="text-amber-700 dark:text-amber-400">(Fallback)</span>
+                                @endif
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Uploader</dt>
+                            <dd>{{ $document->uploader?->name ?? '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt>Verantwortlich</dt>
+                            <dd>{{ $document->responsible?->name ?? '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt>Gültig bis</dt>
+                            <dd>{{ $document->gueltig_bis?->format('d.m.Y') ?? 'ohne Frist' }}</dd>
+                        </div>
+                        <div>
+                            <dt>Aktiv</dt>
+                            <dd>{{ $document->aktiv ? 'Ja' : 'Nein' }}</dd>
+                        </div>
+                        <div>
+                            <dt>Kenntnisnahme</dt>
+                            <dd>
+                                @if(! $document->requires_acknowledgment)
+                                    Nein
+                                @elseif($document->usesFormwerkAcknowledgment())
+                                    Unterschrift (Formwerk)
+                                @else
+                                    Passworteingabe
+                                @endif
+                            </dd>
+                        </div>
                         @if($document->is_onboarding_it || $document->is_onboarding_perso)
-                            <flux:text>
-                                <strong>Onboarding:</strong>
-                                @if($document->is_onboarding_it) IT @endif
-                                @if($document->is_onboarding_perso) Perso @endif
-                            </flux:text>
+                            <div>
+                                <dt>Onboarding</dt>
+                                <dd>
+                                    @if($document->is_onboarding_it) IT @endif
+                                    @if($document->is_onboarding_perso) Perso @endif
+                                </dd>
+                            </div>
                         @endif
-                    </div>
+                    </dl>
 
                     @can('update', $document)
                         @if($document->hasInvalidStoredGvp())
@@ -71,32 +92,37 @@
                                     : ('ID '.$document->gvp_id.' – Datensatz fehlt');
                                 $fallbackGvp = $document->responsibleFallbackGvp();
                             @endphp
-                            <flux:callout variant="warning" icon="exclamation-triangle">
-                                <flux:callout.heading>Gespeicherte GVP nicht mehr gültig</flux:callout.heading>
-                                <flux:callout.text>
-                                    Die gespeicherte GVP „{{ $storedGvpLabel }}“ ist nicht mehr gültig.
+                            <div class="flex items-start gap-3 rounded-xl bg-white/80 p-4 ring-1 ring-[#d0e3f9] dark:bg-white/5 dark:ring-white/10">
+                                <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#073070]/10 text-[#073070] dark:bg-white/10 dark:text-white">
+                                    <flux:icon icon="exclamation-triangle" variant="micro" class="size-5" />
+                                </span>
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-[#073070] dark:text-white">Gespeicherte GVP nicht mehr gültig</p>
+                                    <p class="mt-1 text-sm text-slate-600 dark:text-white/70">
+                                        Die gespeicherte GVP „{{ $storedGvpLabel }}“ ist nicht mehr gültig.
+                                        @if($fallbackGvp)
+                                            Für die Anzeige wird die GVP des Verantwortlichen verwendet: {{ $fallbackGvp->name }}.
+                                        @else
+                                            Der Verantwortliche hat derzeit keine gültige GVP – bitte Verantwortlichen bzw. User-Sync prüfen.
+                                        @endif
+                                    </p>
                                     @if($fallbackGvp)
-                                        Für die Anzeige wird die GVP des Verantwortlichen verwendet: {{ $fallbackGvp->name }}.
-                                    @else
-                                        Der Verantwortliche hat derzeit keine gültige GVP – bitte Verantwortlichen bzw. User-Sync prüfen.
+                                        <div class="mt-3">
+                                            <flux:button
+                                                size="sm"
+                                                variant="primary"
+                                                wire:click="adoptResponsibleGvp"
+                                                wire:confirm="Gespeicherte GVP durch „{{ $fallbackGvp->name }}“ ersetzen?"
+                                            >GVP des Verantwortlichen speichern</flux:button>
+                                        </div>
                                     @endif
-                                </flux:callout.text>
-                                @if($fallbackGvp)
-                                    <div class="mt-3">
-                                        <flux:button
-                                            size="sm"
-                                            variant="primary"
-                                            wire:click="adoptResponsibleGvp"
-                                            wire:confirm="Gespeicherte GVP durch „{{ $fallbackGvp->name }}“ ersetzen?"
-                                        >GVP des Verantwortlichen speichern</flux:button>
-                                    </div>
-                                @endif
-                            </flux:callout>
+                                </div>
+                            </div>
                         @endif
                     @endcan
 
                     @if($document->description)
-                        <flux:text>{{ $document->description }}</flux:text>
+                        <p class="text-sm text-slate-600 dark:text-white/70">{{ $document->description }}</p>
                     @endif
                 </div>
             </div>
@@ -151,9 +177,9 @@
                             variant="primary"
                             title="Bitte zuerst das Dokument herunterladen"
                         >Kenntnisnahme bestätigen</flux:button>
-                        <flux:text class="w-full text-sm text-zinc-500">
+                        <p class="w-full text-sm text-slate-600 dark:text-white/70">
                             Bitte laden Sie das Dokument zuerst herunter, bevor Sie die Kenntnisnahme bestätigen.
-                        </flux:text>
+                        </p>
                     @endif
                 @endif
 
@@ -173,8 +199,10 @@
                 @endcan
             </div>
 
-            <div>
-                <flux:heading size="md" class="mb-2">Versionen</flux:heading>
+            <section class="overflow-hidden rounded-xl ring-1 ring-[#d0e3f9] dark:ring-white/10">
+                <div class="border-b border-[#d0e3f9] px-4 py-3 dark:border-white/10">
+                    <h3 class="text-sm font-semibold text-[#073070] dark:text-white">Versionen</h3>
+                </div>
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>Version</flux:table.column>
@@ -205,10 +233,12 @@
                         @endforeach
                     </flux:table.rows>
                 </flux:table>
-            </div>
+            </section>
 
-            <div>
-                <flux:heading size="md" class="mb-2">Historie</flux:heading>
+            <section class="overflow-hidden rounded-xl ring-1 ring-[#d0e3f9] dark:ring-white/10">
+                <div class="border-b border-[#d0e3f9] px-4 py-3 dark:border-white/10">
+                    <h3 class="text-sm font-semibold text-[#073070] dark:text-white">Historie</h3>
+                </div>
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>Ereignis</flux:table.column>
@@ -225,14 +255,17 @@
                         @endforeach
                     </flux:table.rows>
                 </flux:table>
-            </div>
+            </section>
         </div>
     @endif
 </flux:modal>
 
 <flux:modal wire:model="showExtendModal" class="max-w-lg">
     <form wire:submit="saveExtend" class="space-y-4">
-        <flux:heading size="lg">Gültigkeit verlängern</flux:heading>
+        <div class="pe-10">
+            <h2 class="text-lg font-semibold text-[#073070] dark:text-white">Gültigkeit verlängern</h2>
+            <p class="mt-1 text-sm text-slate-600 dark:text-white/70">Neue Frist für die aktuelle Version festlegen.</p>
+        </div>
         <flux:radio.group wire:model.live="extendMode" label="Art">
             <flux:radio value="auto" label="Automatisch um 1 Jahr" />
             <flux:radio value="manual" label="Manuelles Datum (max. 2 Jahre)" />
@@ -249,7 +282,10 @@
 
 <flux:modal wire:model="showUpdateModal" class="max-w-2xl">
     <form wire:submit="saveUpdateVersion" class="space-y-4">
-        <flux:heading size="lg">Dokument aktualisieren (neue Version)</flux:heading>
+        <div class="pe-10">
+            <h2 class="text-lg font-semibold text-[#073070] dark:text-white">Dokument aktualisieren (neue Version)</h2>
+            <p class="mt-1 text-sm text-slate-600 dark:text-white/70">Neue Datei und die Angaben der nächsten Version.</p>
+        </div>
         <flux:input wire:model="updateTitle" label="Titel" required />
         <flux:textarea wire:model="updateDescription" label="Beschreibung" rows="3" />
         <flux:input type="date" wire:model="updateGueltigBis" label="Gültig bis" />
@@ -320,7 +356,7 @@
                 </flux:file-item>
             @endif
             @error('updateNewsTitleImage')
-                <flux:text class="text-red-600">{{ $message }}</flux:text>
+                <p class="text-sm text-red-600">{{ $message }}</p>
             @enderror
         @endif
         <flux:file-upload wire:model="updateFile" label="Neue Datei">
@@ -346,8 +382,10 @@
 
 <flux:modal wire:model="showEditModal" class="max-w-2xl">
     <form wire:submit="saveEdit" class="space-y-4">
-        <flux:heading size="lg">Dokument bearbeiten</flux:heading>
-        <flux:text>Titel, Beschreibung und Einstellungen. Die Datei bleibt die aktuelle Version.</flux:text>
+        <div class="pe-10">
+            <h2 class="text-lg font-semibold text-[#073070] dark:text-white">Dokument bearbeiten</h2>
+            <p class="mt-1 text-sm text-slate-600 dark:text-white/70">Titel, Beschreibung und Einstellungen. Die Datei bleibt die aktuelle Version.</p>
+        </div>
         <flux:input wire:model="updateTitle" label="Titel" required />
         <flux:textarea wire:model="updateDescription" label="Beschreibung" rows="3" />
         <flux:input type="date" wire:model="updateGueltigBis" label="Gültig bis" />
@@ -397,6 +435,7 @@
 @if($acknowledgmentReportDocumentId)
     <livewire:intranet-app-dokumente::apps.dokumente.acknowledgment-report
         :document-id="$acknowledgmentReportDocumentId"
-        :key="'ack-report-'.$acknowledgmentReportDocumentId"
+        :report-key="$acknowledgmentReportKey"
+        :key="'ack-report-'.$acknowledgmentReportDocumentId.'-'.$acknowledgmentReportKey"
     />
 @endif

@@ -33,9 +33,9 @@
 
 @if($showAcknowledgment)
     <div @class([
-        'overflow-hidden rounded-lg border transition-colors',
-        'border-zinc-200 dark:border-zinc-700' => ! $this->{$requiresModel},
-        'border-accent/50' => $this->{$requiresModel},
+        'overflow-hidden rounded-xl ring-1 transition-colors',
+        'ring-[#d0e3f9] dark:ring-white/10' => ! $this->{$requiresModel},
+        'ring-[#073070] dark:ring-[#d0e3f9]' => $this->{$requiresModel},
     ])>
         <div class="p-4">
             <flux:switch
@@ -47,14 +47,14 @@
         </div>
 
         @if($this->{$requiresModel})
-            <div class="space-y-6 border-t border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
+            <div class="space-y-6 border-t border-[#d0e3f9] bg-[#d0e3f9]/30 p-4 dark:border-white/10 dark:bg-white/5">
                 <flux:radio.group wire:model.live="{{ $methodModel }}" label="Art der Kenntnisnahme" variant="cards" class="max-sm:flex-col">
                     <flux:radio value="password" icon="key" label="Passworteingabe" description="Bestätigung nach dem Download per Passworteingabe." />
                     <flux:radio value="formwerk" icon="pencil-square" label="Unterschrift (Formwerk)" description="Bestätigung erst nach Webhook mit hinterlegtem PDF." />
                 </flux:radio.group>
 
                 @if($this->{$methodModel} === 'formwerk')
-                    <div class="space-y-6 border-l-2 border-zinc-300 pl-4 dark:border-zinc-600">
+                    <div class="space-y-6 border-l-2 border-[#a0c7f2] pl-4 dark:border-white/20">
                         <div class="space-y-3">
                             <flux:radio.group wire:model.live="{{ $urlModeModel }}" label="Formular" variant="cards" class="max-sm:flex-col">
                                 <flux:radio value="standard" label="Standard-Formular" description="Formular aus den Dokumente-Einstellungen." />
@@ -80,11 +80,14 @@
                                     <flux:icon name="arrow-top-right-on-square" variant="micro" />
                                 </flux:link>
                             @else
-                                <flux:callout variant="warning" icon="exclamation-triangle">
-                                    <flux:callout.text>
+                                <div class="flex items-start gap-3 rounded-xl bg-white/80 p-3 ring-1 ring-[#d0e3f9] dark:bg-white/5 dark:ring-white/10">
+                                    <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#073070]/10 text-[#073070] dark:bg-white/10 dark:text-white">
+                                        <flux:icon icon="exclamation-triangle" variant="micro" class="size-5" />
+                                    </span>
+                                    <p class="text-sm text-slate-600 dark:text-white/70">
                                         In den Dokumente-Einstellungen ist keine Standard-Formular-URL hinterlegt. Bitte eine abweichende URL angeben oder die Einstellung ergänzen.
-                                    </flux:callout.text>
-                                </flux:callout>
+                                    </p>
+                                </div>
                             @endif
                         </div>
 

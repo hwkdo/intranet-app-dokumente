@@ -1,7 +1,7 @@
 
 <div>
-<x-intranet-app-dokumente::dokumente-layout heading="Dokumente App" subheading="Übersicht">
-<div>
+<x-intranet-app-dokumente::dokumente-layout heading="Dokumente" subheading="Übersicht nach Organisationseinheit und Kategorie.">
+<div class="space-y-4">
     @php
         $structure = $this->gvpStructure;
         $hgf = $structure['hgf'];
@@ -11,7 +11,7 @@
     @endphp
 
     @if($hgf)
-        <div class="mb-4 flex flex-wrap items-center gap-2">
+        <div class="glass-card sticky top-3 z-20 flex flex-wrap items-center gap-2 p-3" style="--glass-opacity: 0.92">
             @if($this->allDocumentsCount > 0)
                 <flux:button
                     wire:click="openDocumentListModal(null, '{{ implode(',', $hgf->getDescendantIds()) }}', 'Alle', '{{ addslashes($hgf->bezeichnung) }}')"
@@ -21,13 +21,17 @@
                 </flux:button>
             @endif
             @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::upload())
-                <flux:button variant="primary" wire:click="openUploadModal">
+                <flux:button variant="primary" icon="arrow-up-tray" wire:click="openUploadModal">
                     Dokument hochladen
                 </flux:button>
             @endcan
         </div>
 
-        <flux:card class="glass-card p-0!">
+        <x-intranet-app-dokumente::hwk-card
+            title="Dokumenten-Matrix"
+            icon="table-cells"
+            description="Anzahl je Organisationseinheit und Kategorie. Ein Klick öffnet die Liste."
+        >
         <div
             class="overflow-x-auto"
             x-data="{
@@ -256,17 +260,21 @@
                 </flux:table.rows>
             </flux:table>
         </div>
-        </flux:card>
+        </x-intranet-app-dokumente::hwk-card>
 
         {{-- Document list modal --}}
         <flux:modal wire:model="showDocumentListModal" name="document-list" class="md:max-w-4xl">
             <div class="space-y-4">
-                <flux:heading size="lg">{{ $modalCategoryLabel }} in {{ $modalGvpLabel }}</flux:heading>
+                <div class="pe-10">
+                    <h2 class="text-lg font-semibold text-[#073070] dark:text-white">{{ $modalCategoryLabel }} in {{ $modalGvpLabel }}</h2>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-white/70">Dokumente in dieser Auswahl. Die Suche filtert nach dem Titel.</p>
+                </div>
                 <flux:input
                     wire:model.live.debounce.300ms="modalSearch"
                     placeholder="Titel suchen…"
                     icon="magnifying-glass"
                     class="max-w-md"
+                    aria-label="Titel suchen"
                 />
                 <flux:table>
                     <flux:table.columns>
@@ -284,11 +292,11 @@
                                     @if($media && $media->hasGeneratedConversion('thumb'))
                                         <img src="{{ $media->getUrl('thumb') }}" alt="" class="h-12 w-auto object-contain" />
                                     @else
-                                        <flux:icon name="document" class="size-12 text-zinc-400" />
+                                        <flux:icon name="document" class="size-12 text-[#456494]" />
                                     @endif
                                 </flux:table.cell>
                                 <flux:table.cell>
-                                    <button type="button" class="text-left underline" wire:click="openDetail({{ $doc->id }})">
+                                    <button type="button" class="text-left font-medium text-[#073070] dark:text-white" wire:click="openDetail({{ $doc->id }})">
                                         {{ $doc->title }}
                                     </button>
                                 </flux:table.cell>
@@ -300,31 +308,35 @@
                     </flux:table.rows>
                 </flux:table>
                 @if($this->filteredModalDocuments->isEmpty())
-                    <flux:text>
+                    <x-intranet-app-dokumente::hwk-empty
+                        bare
+                        icon="document-magnifying-glass"
+                        :title="trim($modalSearch) !== '' ? 'Keine Treffer' : 'Keine Dokumente'"
+                    >
                         @if(trim($modalSearch) !== '')
                             Keine Treffer für „{{ $modalSearch }}“.
                         @else
                             Keine Dokumente in dieser Auswahl.
                         @endif
-                    </flux:text>
+                    </x-intranet-app-dokumente::hwk-empty>
                 @endif
             </div>
         </flux:modal>
 
         @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::upload())
             <flux:modal wire:model="showUploadModal" name="upload-document" class="w-full md:max-w-5xl">
-                <form wire:submit="saveUpload" class="space-y-8">
-                    <div>
-                        <flux:heading size="xl">Dokument hochladen</flux:heading>
-                        <flux:text class="mt-1">Datei auswählen, zuordnen und festlegen, ob Benutzer das Dokument bestätigen müssen.</flux:text>
+                <form wire:submit="saveUpload" class="space-y-4">
+                    <div class="pe-10">
+                        <h2 class="text-lg font-semibold text-[#073070] dark:text-white">Dokument hochladen</h2>
+                        <p class="mt-1 text-sm text-slate-600 dark:text-white/70">Datei auswählen, zuordnen und festlegen, ob Benutzer das Dokument bestätigen müssen.</p>
                     </div>
 
-                    <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
-                        <div>
-                            <flux:heading size="lg">Dokument</flux:heading>
-                            <flux:text class="mt-1 text-sm">Datei, Titel und Beschreibung.</flux:text>
+                    <section class="overflow-hidden rounded-xl ring-1 ring-[#d0e3f9] dark:ring-white/10">
+                        <div class="border-b border-[#d0e3f9] px-4 py-3 dark:border-white/10">
+                            <h3 class="text-sm font-semibold text-[#073070] dark:text-white">Dokument</h3>
+                            <p class="text-xs text-slate-600 dark:text-white/70">Datei, Titel und Beschreibung.</p>
                         </div>
-                        <div class="space-y-4">
+                        <div class="space-y-4 p-4">
                             <flux:file-upload wire:model="uploadFile" label="Datei">
                                 <flux:file-upload.dropzone
                                     heading="Datei hierher ziehen oder auswählen"
@@ -341,21 +353,19 @@
                                 </flux:file-item>
                             @endif
                             @error('uploadFile')
-                                <flux:text class="text-red-600">{{ $message }}</flux:text>
+                                <p class="text-sm text-red-600">{{ $message }}</p>
                             @enderror
                             <flux:input wire:model="uploadTitle" label="Titel" required />
                             <flux:textarea wire:model="uploadDescription" label="Beschreibung" rows="3" />
                         </div>
                     </section>
 
-                    <flux:separator variant="subtle" />
-
-                    <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
-                        <div>
-                            <flux:heading size="lg">Zuordnung</flux:heading>
-                            <flux:text class="mt-1 text-sm">Kategorie, Verantwortung und Gültigkeit.</flux:text>
+                    <section class="overflow-hidden rounded-xl ring-1 ring-[#d0e3f9] dark:ring-white/10">
+                        <div class="border-b border-[#d0e3f9] px-4 py-3 dark:border-white/10">
+                            <h3 class="text-sm font-semibold text-[#073070] dark:text-white">Zuordnung</h3>
+                            <p class="text-xs text-slate-600 dark:text-white/70">Kategorie, Verantwortung und Gültigkeit.</p>
                         </div>
-                        <div class="grid items-start gap-4 sm:grid-cols-2">
+                        <div class="grid items-start gap-4 p-4 sm:grid-cols-2">
                             <flux:select wire:model.live="uploadCategoryId" variant="listbox" label="Kategorie" placeholder="Kategorie auswählen" required>
                                 @foreach($this->categories as $cat)
                                     <flux:select.option :value="$cat->id">{{ $cat->name }}</flux:select.option>
@@ -381,39 +391,33 @@
                     </section>
 
                     @can(\Hwkdo\IntranetAppDokumente\Support\DocumentPermissions::kenntnisnahme())
-                        <flux:separator variant="subtle" />
-
-                        <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
-                            <div>
-                                <flux:heading size="lg">Kenntnisnahme</flux:heading>
-                                <flux:text class="mt-1 text-sm">Ob und wie Benutzer das Dokument bestätigen müssen.</flux:text>
+                        <section class="overflow-hidden rounded-xl ring-1 ring-[#d0e3f9] dark:ring-white/10">
+                            <div class="border-b border-[#d0e3f9] px-4 py-3 dark:border-white/10">
+                                <h3 class="text-sm font-semibold text-[#073070] dark:text-white">Kenntnisnahme</h3>
+                                <p class="text-xs text-slate-600 dark:text-white/70">Ob und wie Benutzer das Dokument bestätigen müssen.</p>
                             </div>
-                            <div>
+                            <div class="p-4">
                                 @include('intranet-app-dokumente::partials.acknowledgment-method-fields', ['showOnboarding' => false])
                             </div>
                         </section>
 
-                        <flux:separator variant="subtle" />
-
-                        <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
-                            <div>
-                                <flux:heading size="lg">Onboarding</flux:heading>
-                                <flux:text class="mt-1 text-sm">Dokument neuen Mitarbeitenden im Onboarding bereitstellen.</flux:text>
+                        <section class="overflow-hidden rounded-xl ring-1 ring-[#d0e3f9] dark:ring-white/10">
+                            <div class="border-b border-[#d0e3f9] px-4 py-3 dark:border-white/10">
+                                <h3 class="text-sm font-semibold text-[#073070] dark:text-white">Onboarding</h3>
+                                <p class="text-xs text-slate-600 dark:text-white/70">Dokument neuen Mitarbeitenden im Onboarding bereitstellen.</p>
                             </div>
-                            <div>
+                            <div class="p-4">
                                 @include('intranet-app-dokumente::partials.acknowledgment-method-fields', ['showAcknowledgment' => false])
                             </div>
                         </section>
                     @endcan
 
-                    <flux:separator variant="subtle" />
-
-                    <section class="grid gap-x-8 gap-y-4 md:grid-cols-[14rem_1fr]">
-                        <div>
-                            <flux:heading size="lg">News</flux:heading>
-                            <flux:text class="mt-1 text-sm">Beim Hochladen wird immer eine News in der Kategorie „{{ \Hwkdo\IntranetAppDokumente\Services\DocumentNewsService::CATEGORY_NAME }}“ veröffentlicht.</flux:text>
+                    <section class="overflow-hidden rounded-xl ring-1 ring-[#d0e3f9] dark:ring-white/10">
+                        <div class="border-b border-[#d0e3f9] px-4 py-3 dark:border-white/10">
+                            <h3 class="text-sm font-semibold text-[#073070] dark:text-white">News</h3>
+                            <p class="text-xs text-slate-600 dark:text-white/70">Beim Hochladen wird immer eine News in der Kategorie „{{ \Hwkdo\IntranetAppDokumente\Services\DocumentNewsService::CATEGORY_NAME }}“ veröffentlicht.</p>
                         </div>
-                        <div class="space-y-4">
+                        <div class="space-y-4 p-4">
                             <flux:radio.group wire:model.live="uploadNewsTitleImageMode" label="Titelbild der News" variant="cards" class="max-lg:flex-col">
                                 <flux:radio value="auto" icon="sparkles" label="Automatisch" description="Dokument-Vorschau im Rahmenbild" />
                                 <flux:radio value="custom" icon="photo" label="Eigenes Bild" description="Eigenes Bild hochladen" />
@@ -436,7 +440,7 @@
                                     </flux:file-item>
                                 @endif
                                 @error('uploadNewsTitleImage')
-                                    <flux:text class="text-red-600">{{ $message }}</flux:text>
+                                    <p class="text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             @endif
                             <flux:switch
@@ -450,10 +454,15 @@
 
                     @if($showUploadModal)
                         @php($recipients = $this->uploadRecipientEstimate)
-                        <flux:callout icon="bell" variant="secondary">
-                            <flux:callout.heading>Benachrichtigungen beim Speichern</flux:callout.heading>
-                            <flux:callout.text>
-                                <ul class="mt-1 space-y-1">
+                        <section class="overflow-hidden rounded-xl ring-1 ring-[#d0e3f9] dark:ring-white/10">
+                            <div class="flex items-center gap-3 border-b border-[#d0e3f9] px-4 py-3 dark:border-white/10">
+                                <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#073070]/10 text-[#073070] dark:bg-white/10 dark:text-white">
+                                    <flux:icon icon="bell" variant="micro" class="size-5" />
+                                </span>
+                                <h3 class="text-sm font-semibold text-[#073070] dark:text-white">Benachrichtigungen beim Speichern</h3>
+                            </div>
+                            <div class="px-4 py-3 text-sm text-slate-600 dark:text-white/70">
+                                <ul class="space-y-1">
                                     <li wire:key="upload-recipients-news">
                                         <strong>{{ number_format($recipients['news'], 0, ',', '.') }}</strong>
                                         {{ $recipients['news'] === 1 ? 'Benutzer erhält' : 'Benutzer erhalten' }}
@@ -467,8 +476,8 @@
                                         </li>
                                     @endif
                                 </ul>
-                            </flux:callout.text>
-                        </flux:callout>
+                            </div>
+                        </section>
                     @endif
 
                     <div class="flex items-center gap-2">
@@ -482,7 +491,9 @@
 
         @include('intranet-app-dokumente::livewire.apps.dokumente.partials.document-modals')
     @else
-        <flux:text>Keine GVP-Struktur vorhanden.</flux:text>
+        <x-intranet-app-dokumente::hwk-empty icon="table-cells" title="Keine GVP-Struktur vorhanden">
+            Es ist keine Organisationsstruktur hinterlegt, aus der die Matrix aufgebaut werden kann.
+        </x-intranet-app-dokumente::hwk-empty>
     @endif
 </div>
 </x-intranet-app-dokumente::dokumente-layout>

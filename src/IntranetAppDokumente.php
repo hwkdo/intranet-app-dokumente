@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Hwkdo\IntranetAppDokumente;
 
-use Hwkdo\IntranetAppBase\Interfaces\ProvidesBackgroundActivitiesInterface;
-use Hwkdo\IntranetAppDokumente\Background\DokumenteBackgroundActivities;
 use Hwkdo\IntranetAppBase\Data\NotificationTypeDefinition;
 use Hwkdo\IntranetAppBase\Data\SearchActionDefinition;
 use Hwkdo\IntranetAppBase\Interfaces\IntranetAppInterface;
+use Hwkdo\IntranetAppBase\Interfaces\ProvidesBackgroundActivitiesInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesNotificationsInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesSearchActionsInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesSearchInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesTasksInterface;
+use Hwkdo\IntranetAppBase\Interfaces\SearchSourceInterface;
 use Hwkdo\IntranetAppBase\Interfaces\TaskProviderInterface;
+use Hwkdo\IntranetAppDokumente\Background\DokumenteBackgroundActivities;
 use Hwkdo\IntranetAppDokumente\Data\AppSettings;
 use Hwkdo\IntranetAppDokumente\Search\DocumentsSearchSource;
 use Hwkdo\IntranetAppDokumente\Tasks\DocumentReviewTaskProvider;
@@ -97,7 +98,7 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesBackgroundAc
     }
 
     /**
-     * @return list<class-string<\Hwkdo\IntranetAppBase\Interfaces\SearchSourceInterface>>
+     * @return list<class-string<SearchSourceInterface>>
      */
     public static function searchSources(): array
     {
@@ -109,6 +110,23 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesBackgroundAc
     public static function searchActions(): array
     {
         return [
+            new SearchActionDefinition(
+                key: 'dokumente.kenntnisnahme',
+                title: 'Kenntnisnahme',
+                keywords: [
+                    'kenntnisnahme',
+                    'zur kenntnisnahme',
+                    'dokumente kenntnisnahme',
+                    'kenntnis nehmen',
+                ],
+                routeName: 'apps.dokumente.kenntnisnahme',
+                appIdentifier: self::identifier(),
+                appName: self::app_name(),
+                icon: 'clipboard-document-check',
+                permission: 'see-app-dokumente',
+                subtitle: self::app_name(),
+                sort: 80,
+            ),
             new SearchActionDefinition(
                 key: 'dokumente.chat',
                 title: 'KI-Chat',
@@ -153,6 +171,4 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesBackgroundAc
     {
         return DokumenteBackgroundActivities::definitions();
     }
-
-
 }
