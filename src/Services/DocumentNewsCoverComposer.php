@@ -32,12 +32,12 @@ class DocumentNewsCoverComposer
         $settings = IntranetAppDokumenteSettings::resolvedAppSettings();
 
         return [
-            'width' => (int) ($config['width'] ?? 1536),
-            'height' => (int) ($config['height'] ?? 1024),
-            'slot_x' => $settings->newsFrameSlotX ?? (int) ($config['slot_x'] ?? 513),
-            'slot_y' => $settings->newsFrameSlotY ?? (int) ($config['slot_y'] ?? 295),
-            'slot_width' => $settings->newsFrameSlotWidth ?? (int) ($config['slot_width'] ?? 540),
-            'slot_height' => $settings->newsFrameSlotHeight ?? (int) ($config['slot_height'] ?? 600),
+            'width' => (int) config('news.title_dimensions.width', $config['width'] ?? 1920),
+            'height' => (int) config('news.title_dimensions.height', $config['height'] ?? 1080),
+            'slot_x' => $settings->newsFrameSlotX ?? (int) ($config['slot_x'] ?? 641),
+            'slot_y' => $settings->newsFrameSlotY ?? (int) ($config['slot_y'] ?? 269),
+            'slot_width' => $settings->newsFrameSlotWidth ?? (int) ($config['slot_width'] ?? 675),
+            'slot_height' => $settings->newsFrameSlotHeight ?? (int) ($config['slot_height'] ?? 750),
             'thumb_max_width' => (int) ($config['thumb_max_width'] ?? 320),
             'thumb_max_height' => (int) ($config['thumb_max_height'] ?? 420),
             'default_filename' => (string) ($config['default_filename'] ?? 'news-frame-default.png'),
@@ -127,18 +127,31 @@ class DocumentNewsCoverComposer
     public function ensureDefaultSeeded(): void
     {
         $record = DocumentNewsFrame::current();
-        if ($record->hasCustomFrame()) {
-            return;
-        }
-
         $default = $this->defaultFramePath();
         if (! is_file($default)) {
             return;
         }
 
+        $spec = $this->frameSpec();
+        $media = $record->getFirstMedia('frame');
+
+        if ($media !== null && $media->file_name !== $spec['default_filename']) {
+            return;
+        }
+
+        if ($media !== null) {
+            $path = $media->getPath();
+            $size = is_string($path) && is_file($path) ? @getimagesize($path) : false;
+
+            if ($size !== false && (int) $size[0] === $spec['width'] && (int) $size[1] === $spec['height']) {
+                return;
+            }
+        }
+
+        $record->clearMediaCollection('frame');
         $record->addMedia($default)
             ->preservingOriginal()
-            ->usingFileName($this->frameSpec()['default_filename'])
+            ->usingFileName($spec['default_filename'])
             ->toMediaCollection('frame');
     }
 }

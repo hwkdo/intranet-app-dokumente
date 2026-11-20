@@ -25,16 +25,17 @@ return [
     |--------------------------------------------------------------------------
     | News-Rahmenbild (Dokument-Thumb wird in die Lücke gesetzt)
     |--------------------------------------------------------------------------
-    | Maße beziehen sich auf die Default-Vorlage (news-frame-default.png).
+    | Maße beziehen sich auf die Default-Vorlage (news-frame-default.png)
+    | im Format der News-Titelbilder (16:9, siehe config/news.php).
     | Bei abweichender Upload-Größe werden Slot-Koordinaten proportional skaliert.
     */
     'news_frame' => [
-        'width' => 1536,
-        'height' => 1024,
-        'slot_x' => 513,
-        'slot_y' => 295,
-        'slot_width' => 540,
-        'slot_height' => 600,
+        'width' => 1920,
+        'height' => 1080,
+        'slot_x' => 641,
+        'slot_y' => 269,
+        'slot_width' => 675,
+        'slot_height' => 750,
         // Nur Hinweis für die UI / Dokumentation (Medien-Conversion). Beim Compose füllt das Thumb die Slot-Größe.
         'thumb_max_width' => 320,
         'thumb_max_height' => 420,

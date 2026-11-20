@@ -19,13 +19,13 @@ class NewsRahmen extends Component
 
     public $frameUpload = null;
 
-    public int $slotX = 513;
+    public int $slotX = 641;
 
-    public int $slotY = 295;
+    public int $slotY = 269;
 
-    public int $slotWidth = 540;
+    public int $slotWidth = 675;
 
-    public int $slotHeight = 600;
+    public int $slotHeight = 750;
 
     public function mount(DocumentNewsCoverComposer $composer): void
     {
@@ -89,10 +89,10 @@ class NewsRahmen extends Component
         }
 
         $config = config('intranet-app-dokumente.news_frame', []);
-        $this->slotX = (int) ($config['slot_x'] ?? 513);
-        $this->slotY = (int) ($config['slot_y'] ?? 295);
-        $this->slotWidth = (int) ($config['slot_width'] ?? 540);
-        $this->slotHeight = (int) ($config['slot_height'] ?? 600);
+        $this->slotX = (int) ($config['slot_x'] ?? 641);
+        $this->slotY = (int) ($config['slot_y'] ?? 269);
+        $this->slotWidth = (int) ($config['slot_width'] ?? 675);
+        $this->slotHeight = (int) ($config['slot_height'] ?? 750);
 
         $current = IntranetAppDokumenteSettings::resolvedAppSettings();
         IntranetAppDokumenteSettings::persistAppSettings(AppSettings::from(array_merge($current->toArray(), [
