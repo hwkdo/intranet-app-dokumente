@@ -344,7 +344,7 @@
             <flux:file-upload wire:model="updateNewsTitleImage" label="Eigenes Titelbild">
                 <flux:file-upload.dropzone
                     heading="Titelbild hierher ziehen oder auswählen"
-                    text="JPG, PNG, WebP · max. 10 MB"
+                    text="JPG, PNG, WebP · {{ config('news.title_dimensions.width', 1920) }} × {{ config('news.title_dimensions.height', 1080) }} px (16:9) · max. 10 MB"
                     with-progress
                 />
             </flux:file-upload>
