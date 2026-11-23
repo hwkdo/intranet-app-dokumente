@@ -6,7 +6,7 @@ namespace Hwkdo\IntranetAppDokumente\Livewire\Apps\Dokumente;
 
 use App\Data\UserSettings;
 use Hwkdo\IntranetAppBase\Support\AiUsage;
-use Hwkdo\OpenwebuiApiLaravel\Services\OpenWebUiModelService;
+use Hwkdo\IntranetAppDokumente\Models\IntranetAppDokumenteSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -14,37 +14,9 @@ use Livewire\Component;
 
 class Chat extends Component
 {
-    public string $selectedModel = '';
-
-    public string $modelError = '';
-
-    /**
-     * @var list<array{id: string, name: string}>
-     */
-    public array $models = [];
-
-    public function mount(OpenWebUiModelService $models): void
+    public function mount(): void
     {
         $this->authorize('see-app-dokumente');
-
-        if (! AiUsage::allowed() || $this->apiKey === '') {
-            return;
-        }
-
-        try {
-            $this->models = $models->listForToken($this->apiKey);
-            $this->selectedModel = $this->models[0]['id'] ?? '';
-        } catch (\Throwable $exception) {
-            $this->modelError = $exception->getMessage();
-        }
-    }
-
-    public function updatedSelectedModel(string $model): void
-    {
-        $ids = array_column($this->models, 'id');
-        if (! in_array($model, $ids, true)) {
-            $this->selectedModel = $ids[0] ?? '';
-        }
     }
 
     #[Computed]
@@ -59,12 +31,17 @@ class Chat extends Component
     }
 
     #[Computed]
+    public function model(): string
+    {
+        return trim(IntranetAppDokumenteSettings::resolvedAppSettings()->openWebUiModel);
+    }
+
+    #[Computed]
     public function ready(): bool
     {
         return AiUsage::allowed()
             && $this->apiKey !== ''
-            && $this->modelError === ''
-            && $this->selectedModel !== '';
+            && $this->model !== '';
     }
 
     #[Computed]
@@ -84,11 +61,7 @@ class Chat extends Component
             return 'Für den Chat fehlt der OpenWebUI API-Token in den Einstellungen.';
         }
 
-        if ($this->modelError !== '') {
-            return $this->modelError;
-        }
-
-        return 'OpenWebUI hat für diesen Token keine Modelle geliefert.';
+        return 'Für den Chat ist in den App-Einstellungen kein OpenWebUI-Modell hinterlegt.';
     }
 
     public function render(): View

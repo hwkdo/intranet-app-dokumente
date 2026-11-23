@@ -10,6 +10,7 @@
 
     <x-intranet-app-dokumente::hwk-card title="Empfohlene Standard-Rollen" icon="information-circle" description="Jede Rolle enthält die Permissions, die für ihre Aufgabe nötig sind." padded>
         <ul class="list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-white/70">
+            <li><strong class="text-[#073070] dark:text-white">App-Dokumente-Benutzer</strong> — Dokumente sehen. Aktive Benutzer erhalten diese Rolle beim Permission-Sync automatisch.</li>
             <li><strong class="text-[#073070] dark:text-white">App-Dokumente-Upload</strong> — Dokumente hochladen (ohne Kenntnisnahme-Flag und ohne manuelle GVP-Wahl)</li>
             <li><strong class="text-[#073070] dark:text-white">App-Dokumente-Kenntnisnahme</strong> — hochladen und zusätzlich „Zur Kenntnisnahme“ setzen</li>
             <li><strong class="text-[#073070] dark:text-white">App-Dokumente-GVP-Auswahl</strong> — hochladen und zusätzlich die GVP manuell wählen</li>

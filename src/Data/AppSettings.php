@@ -48,6 +48,9 @@ class AppSettings extends BaseAppSettings implements HasDocumentParseSettings
         #[Description('Standard-Formwerk-URL für Kenntnisnahme per Unterschrift')]
         public ?string $formwerkAcknowledgmentFormUrl = null,
 
+        #[Description('OpenWebUI-Modell für den KI-Chat')]
+        public string $openWebUiModel = 'Intranet-App-Dokumente',
+
         #[Description('Standard-JWT-Felder der Formwerk-Kenntnisnahme (JSON-Liste)')]
         public array $formwerkAcknowledgmentPayloadFields = [
             'username',

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Hwkdo\IntranetAppDokumente;
 
+use Hwkdo\IntranetAppBase\Services\LightRagCitationRegistry;
 use Hwkdo\IntranetAppDokumente\Commands\ImportLegacyDokumenteCommand;
 use Hwkdo\IntranetAppDokumente\Commands\SeedLegacyDocumentAcknowledgmentsCommand;
 use Hwkdo\IntranetAppDokumente\Commands\SendDocumentReviewRemindersCommand;
 use Hwkdo\IntranetAppDokumente\Commands\SyncDokumenteLightRagStatusCommand;
 use Hwkdo\IntranetAppDokumente\Models\Document;
 use Hwkdo\IntranetAppDokumente\Policies\DocumentPolicy;
+use Hwkdo\IntranetAppDokumente\Services\DokumenteCitationLinker;
 use Hwkdo\IntranetAppDokumente\Services\FormwerkOnboardingDocumentLinks;
 use Hwkdo\IntranetAppWorkflows\Contracts\OnboardingSignatureDocumentSource;
 use Illuminate\Support\Facades\Config;
@@ -59,6 +61,10 @@ class IntranetAppDokumenteServiceProvider extends PackageServiceProvider
 
         $this->app->booted(function (): void {
             $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+
+            $this->app->make(LightRagCitationRegistry::class)->register(
+                $this->app->make(DokumenteCitationLinker::class),
+            );
         });
 
         $this->configureTypesenseIndexSettings();

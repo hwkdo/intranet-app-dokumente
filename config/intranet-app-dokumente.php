@@ -90,11 +90,21 @@ return [
             ],
         ],
         'user' => [
-            'name' => 'Benutzer',
+            'name' => 'App-Dokumente-Benutzer',
             'permissions' => [
                 'see-app-dokumente',
             ],
-            'add_to_existing' => true,
+            'all_users' => true,
+        ],
+    ],
+
+    /*
+    | Bislang hing see-app-dokumente an der globalen Rolle Benutzer.
+    | Der Sync nimmt sie dort weg, sobald App-Dokumente-Benutzer sie trägt.
+    */
+    'detach_permissions' => [
+        'Benutzer' => [
+            'see-app-dokumente',
         ],
     ],
 ];
