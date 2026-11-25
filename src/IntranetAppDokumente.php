@@ -6,8 +6,10 @@ namespace Hwkdo\IntranetAppDokumente;
 
 use Hwkdo\IntranetAppBase\Data\NotificationTypeDefinition;
 use Hwkdo\IntranetAppBase\Data\SearchActionDefinition;
+use Hwkdo\IntranetAppBase\Interfaces\DashboardWidgetProviderInterface;
 use Hwkdo\IntranetAppBase\Interfaces\IntranetAppInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesBackgroundActivitiesInterface;
+use Hwkdo\IntranetAppBase\Interfaces\ProvidesDashboardWidgetsInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesNotificationsInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesSearchActionsInterface;
 use Hwkdo\IntranetAppBase\Interfaces\ProvidesSearchInterface;
@@ -15,13 +17,14 @@ use Hwkdo\IntranetAppBase\Interfaces\ProvidesTasksInterface;
 use Hwkdo\IntranetAppBase\Interfaces\SearchSourceInterface;
 use Hwkdo\IntranetAppBase\Interfaces\TaskProviderInterface;
 use Hwkdo\IntranetAppDokumente\Background\DokumenteBackgroundActivities;
+use Hwkdo\IntranetAppDokumente\Dashboard\DokumenteDashboardWidgetProvider;
 use Hwkdo\IntranetAppDokumente\Data\AppSettings;
 use Hwkdo\IntranetAppDokumente\Search\DocumentsSearchSource;
 use Hwkdo\IntranetAppDokumente\Tasks\DocumentReviewTaskProvider;
 use Hwkdo\IntranetAppDokumente\Tasks\PendingAcknowledgmentTaskProvider;
 use Illuminate\Support\Collection;
 
-class IntranetAppDokumente implements IntranetAppInterface, ProvidesBackgroundActivitiesInterface, ProvidesNotificationsInterface, ProvidesSearchActionsInterface, ProvidesSearchInterface, ProvidesTasksInterface
+class IntranetAppDokumente implements IntranetAppInterface, ProvidesBackgroundActivitiesInterface, ProvidesDashboardWidgetsInterface, ProvidesNotificationsInterface, ProvidesSearchActionsInterface, ProvidesSearchInterface, ProvidesTasksInterface
 {
     public static function app_name(): string
     {
@@ -170,5 +173,15 @@ class IntranetAppDokumente implements IntranetAppInterface, ProvidesBackgroundAc
     public static function backgroundActivities(): array
     {
         return DokumenteBackgroundActivities::definitions();
+    }
+
+    /**
+     * @return array<class-string<DashboardWidgetProviderInterface>>
+     */
+    public static function dashboardWidgetProviders(): array
+    {
+        return [
+            DokumenteDashboardWidgetProvider::class,
+        ];
     }
 }

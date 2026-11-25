@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Hwkdo\IntranetAppDokumente\Livewire\Apps\Dokumente;
 
-use App\Data\UserSettings;
-use Hwkdo\IntranetAppBase\Support\AiUsage;
-use Hwkdo\IntranetAppDokumente\Models\IntranetAppDokumenteSettings;
+use Hwkdo\IntranetAppDokumente\Support\DokumenteChatSession;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -22,46 +19,40 @@ class Chat extends Component
     #[Computed]
     public function apiKey(): string
     {
-        $user = Auth::user();
-        if ($user === null) {
-            return '';
-        }
-
-        return trim((string) (UserSettings::from($user->settings)->ai->openWebUiApiToken ?? ''));
+        return DokumenteChatSession::apiKey();
     }
 
     #[Computed]
     public function model(): string
     {
-        return trim(IntranetAppDokumenteSettings::resolvedAppSettings()->openWebUiModel);
+        return DokumenteChatSession::model();
     }
 
     #[Computed]
     public function ready(): bool
     {
-        return AiUsage::allowed()
-            && $this->apiKey !== ''
-            && $this->model !== '';
+        return DokumenteChatSession::ready();
     }
 
     #[Computed]
     public function needsToken(): bool
     {
-        return AiUsage::allowed() && $this->apiKey === '';
+        return DokumenteChatSession::needsToken();
     }
 
     #[Computed]
     public function notice(): string
     {
-        if (! AiUsage::allowed()) {
-            return AiUsage::DENIED_MESSAGE;
-        }
+        return DokumenteChatSession::notice();
+    }
 
-        if ($this->apiKey === '') {
-            return 'Für den Chat fehlt der OpenWebUI API-Token in den Einstellungen.';
-        }
-
-        return 'Für den Chat ist in den App-Einstellungen kein OpenWebUI-Modell hinterlegt.';
+    /**
+     * @return array<string, mixed>
+     */
+    #[Computed]
+    public function prismParameters(): array
+    {
+        return DokumenteChatSession::prismParameters();
     }
 
     public function render(): View
